@@ -18,7 +18,5 @@ bar_3 = Bar(left_node = node_3, right_node = node_4, q = 22.5, E = 2*28000, A = 
 bars = [bar_1, bar_2, bar_3]
 
 structure = Structure(nodes, bars)
-print(structure.num_nodes)
-print(structure.symbols)
 print(structure.K)
 print(structure.solve())    

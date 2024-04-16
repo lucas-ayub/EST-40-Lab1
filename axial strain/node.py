@@ -34,9 +34,17 @@ class Node:
 
         :param delta: The displacement of the node.
         :type delta: float
+        
+        :return: The displacement.
+        :rtype: float
         """
         self.displacement = delta
         
     def getFixedState(self):
-        """"""
+        """
+        Gets the fixed state of the node.
+        
+        :return: The state of the node
+        :rtype: bool
+        """
         return self.is_fixed

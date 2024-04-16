@@ -1,5 +1,5 @@
-from node import *
-from bar import *
+from node import Node
+from bar import Bar
 
 import numpy as np
 import sympy as sp
@@ -61,7 +61,7 @@ class Structure:
         Calculates the reaction force vector of the system.
 
         :return: The reaction force vector.
-        :rtype: numpy.ndarray
+        :rtype: sympy.Matrix
         """
         Re, Rd = sp.symbols('Re Rd')
         reaction_vector = sp.zeros(self.num_nodes, 1)
@@ -85,6 +85,7 @@ class Structure:
             self.symbols.append(symbol)
         self.symbols = sp.symbols(self.symbols)
         u = sp.Matrix(self.symbols[2:])
+        print(u)
         for i in range(len(u)):
             if self.nodes[i].getFixedState():
                 u[i] = 0

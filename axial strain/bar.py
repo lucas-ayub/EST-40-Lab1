@@ -1,4 +1,5 @@
 import numpy as np
+from node import Node
 
 class Bar:
     def __init__(self, left_node, right_node, q, E, A):
