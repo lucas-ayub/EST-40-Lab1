@@ -83,7 +83,7 @@ class Truss:
             reaction_vector[2*i] = H_symbol if is_fixed_x else 0
             displacement_vector[2*i] = 0 if is_fixed_x else u_symbol
             reaction_vector[2*i + 1] = V_symbol if is_fixed_y else 0
-            displacement_vector[2*i + 1] = 0 if is_fixed_x else v_symbol
+            displacement_vector[2*i + 1] = 0 if is_fixed_y else v_symbol
                          
         self.symbols = sp.symbols(self.symbols) 
             
