@@ -1,6 +1,6 @@
 from node import Node
 from bar import Bar
-from truss import Truss
+from truss import *
 
 """
 TODO:

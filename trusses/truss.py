@@ -4,6 +4,7 @@ from bar import Bar
 import numpy as np
 import sympy as sp
 
+
 class Truss:
     def __init__(self, list_of_nodes, list_of_bars):
         """
@@ -22,6 +23,8 @@ class Truss:
         self.symbols = []
         self.r, self.u = self.calculateReactionAndDisplacementVectors()
         self.solution = self.calculateSolution()
+        self.setNodesDisplacements()
+        self.setBarsStresses()
         
     def calculateStiffnessMatrix(self):
         """
@@ -72,10 +75,8 @@ class Truss:
         displacement_vector = sp.zeros(2*self.num_nodes, 1)
         
         for i, node in enumerate(self.nodes):
-            H_symbol = 'H_' + str(i+1)
-            V_symbol = 'V_' + str(i+1)
-            u_symbol = 'u_' + str(i+1)
-            v_symbol = 'v_' + str(i+1)
+            H_symbol, V_symbol = 'H_' + str(i+1), 'V_' + str(i+1)
+            u_symbol, v_symbol = 'u_' + str(i+1), 'v_' + str(i+1)
             
             self.symbols.extend([H_symbol, V_symbol, u_symbol, v_symbol])
             
@@ -90,29 +91,77 @@ class Truss:
             
         return reaction_vector, displacement_vector
 
-    def calculateSolution(self):
+    def sympySolution(self):
         """
-        Calculates the system solution.
+        Returns the sympy solution to the system.
+        
+        :return: Symply dict with the variables and their values
+        :rtype: dict
         """
         f = sp.Matrix(self.f) + self.r
         K = sp.Matrix(self.K)
         u = sp.Matrix(self.u)
-        solution = sp.solve(K*u - f, self.symbols)
+        variables = sp.solve(K*u - f, self.symbols)
         
-        return solution
+        return variables
 
+    def calculateSolution(self):
+        """
+        Calculates the system solution.
+        
+        :return: The solution vector.
+        :rtype: dict
+        """    
+        variables = self.sympySolution()
+        solution = {key: 0 for key in self.symbols}        
+        for key in solution.keys():
+            if key in variables.keys():
+                solution[key] = variables[key]
+        return solution
+    
     def getSolution(self):
         """
         Returns the system solution.
         
         :return: The solution vector.
         :rtype: dict
-        """    
+        """
+        
+        return self.solution
+    
+    def setNodesDisplacements(self):
+        """
+        Sets the displacements of the nodes.
+        """
+        solution = self.getSolution()
+        for i, node in enumerate(self.nodes):
+            H, V = 'H_' + str(i+1), 'V_' + str(i+1)
+            u, v = 'u_' + str(i+1), 'v_' + str(i+1)
+        
+            f_x, f_y = solution[H], solution[V]
+            delta_x, delta_y = solution[u], solution[v]
+            node.setDisplacement(delta_x, delta_y)
+            node.setTotalForces(f_x, f_y)
+    
+    def setBarsStresses(self):
+        """
+        Sets the stresses of the bars.
+        """
+        for bar in self.bars:
+            bar.setBarStress()
 
-        variables = {key: 0 for key in self.symbols}        
-        for key in variables.keys():
-            if key in self.solution.keys():
-                variables[key] = self.solution[key]
-        return variables
+    def getBarStresses(self):
+        """
+        Gets the stresses of the bars.
+        """
+        number_of_bars = len(self.bars)
+        N_symbols = ['N_' + str(i+1) for i in range(number_of_bars + 1)]
+        stresses_values =  [bar.getBarStress() for bar in self.bars]       
+        stresses = dict(zip(N_symbols, stresses_values))  
+        
+        return stresses  
 
+        
+
+            
             

@@ -18,6 +18,17 @@ class Node:
         :type delta_y: float
         """
         self.displacement = np.array([delta_x, delta_y])
+        
+    def setTotalForces(self, r_x, r_y):
+        """
+        Sets the displacement of the node.
+
+        :param r_x: The total horizontal force of the node.
+        :type r_x: float
+        :param r_y: The total vertical force of the node.
+        :type r_y: float
+        """
+        self.displacement = np.array([r_x, r_y])
     
     def getFixedState(self):
         """

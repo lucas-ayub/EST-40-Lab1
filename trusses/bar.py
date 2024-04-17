@@ -21,9 +21,19 @@ class Bar:
         self.right_node = right_node
         self.E = E
         self.A = A
-        self.L = np.linalg.norm(self.left_node.position - self.right_node.position)
+        self.L = self.calculateLength()
         self.angle = self.getBarAngle()
         self.stiffness_matrix = self.calculateStiffnessMatrix()
+        self.N = 0
+        
+    def calculateLength(self):
+        """
+        Calculates the length of the bar.
+        
+        :return: The length of the bar.
+        :rtype: float
+        """
+        return np.linalg.norm(self.left_node.position - self.right_node.position)
         
     def calculateStiffnessMatrix(self):
         """
@@ -65,7 +75,7 @@ class Bar:
         if dx == 0:  
             if dy > 0:
                 return np.pi / 2  
-            else:
+            else:   
                 return -np.pi / 2  
         else:
             return np.arctan(dy / dx)
@@ -77,4 +87,15 @@ class Bar:
         :return: The stress of the bar.
         :rtype: float
         """
-        return self.E * (self.right_node.displacement - self.left_node.displacement) / self.L
+        Li = self.L
+        Lf = self.calculateLength()
+        N = self.E * self.A * (Lf - Li) / Li
+        self.L = self.calculateLength()
+        
+        return N
+    
+    def setBarStress(self):
+        """
+        Sets the stress of the bar.
+        """
+        self.N = self.getBarStress()
