@@ -7,6 +7,15 @@ class Node:
         self.external_forces = np.array([fx, fy])
         self.constraints = {'isFixedInX': fixed_in_x, 'isFixedInY': fixed_in_y}
    
+    def getPosition(self):
+        """
+        Gets the position of the node.
+        
+        :return: The position of the node.
+        :rtype: np.array
+        """    
+    
+        return self.position
         
     def setDisplacement(self, delta_x, delta_y):
         """
@@ -19,6 +28,15 @@ class Node:
         """
         self.displacement = np.array([delta_x, delta_y])
         
+    def getDisplacement(self):
+        """
+        Gets the displacement of the node.
+
+        :return: The displacement of the node.
+        :rtype: numpy.ndarray
+        """
+        return self.displacement
+        
     def setTotalForces(self, r_x, r_y):
         """
         Sets the displacement of the node.
@@ -29,6 +47,15 @@ class Node:
         :type r_y: float
         """
         self.displacement = np.array([r_x, r_y])
+        
+    def getTotalForces(self):
+        """
+        Gets the total forces of the node.
+
+        :return: The total forces of the node.
+        :rtype: numpy.ndarray
+        """
+        return self.external_forces
     
     def getFixedState(self):
         """

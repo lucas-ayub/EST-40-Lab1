@@ -16,19 +16,30 @@ class Bar:
         :type E: float
         :param A: The cross-sectional area of the bar.
         :type A: float
+        :param N: Stress
+        :type N: float
+        :param sigma: Tension
+        :type sigma: float
         """
         self.left_node = left_node
         self.right_node = right_node
         self.E = E
         self.A = A
-        self.L = self.calculateLength()
+        self.L = np.linalg.norm(self.left_node.position - self.right_node.position)  
         self.angle = self.getBarAngle()
         self.stiffness_matrix = self.calculateStiffnessMatrix()
         self.N = 0
+        self.sigma = 0
         
-    def calculateLength(self):
+    def getBarLength(self):
         """
-        Calculates the length of the bar.
+        Get the length of the bar.
+        """
+        return self.L
+    
+    def calculateBarLength(self):
+        """
+        Calculate the length of the bar.
         
         :return: The length of the bar.
         :rtype: float
@@ -81,21 +92,4 @@ class Bar:
             return np.arctan(dy / dx)
 
     def getBarStress(self):
-        """
-        Gets the stress of the bar.
-
-        :return: The stress of the bar.
-        :rtype: float
-        """
-        Li = self.L
-        Lf = self.calculateLength()
-        N = self.E * self.A * (Lf - Li) / Li
-        self.L = self.calculateLength()
-        
-        return N
-    
-    def setBarStress(self):
-        """
-        Sets the stress of the bar.
-        """
-        self.N = self.getBarStress()
+        pass

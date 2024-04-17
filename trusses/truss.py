@@ -23,8 +23,21 @@ class Truss:
         self.symbols = []
         self.r, self.u = self.calculateReactionAndDisplacementVectors()
         self.solution = self.calculateSolution()
-        self.setNodesDisplacements()
-        self.setBarsStresses()
+        self.setNodesDisplacementsAndForces()
+    
+    def setNodesDisplacementsAndForces(self):
+        """
+        Sets the displacements and forces of the nodes based on the system solution.
+        """
+        solution = self.getSolution()
+        values = list(solution.values())  
+        for i in range(0, len(values), 4):
+            H, V, u, v = values[i:i+4]
+            node_index = (i // 4) + 1  
+            self.nodes[node_index - 1].setDisplacement(u, v)
+            self.nodes[node_index - 1].setTotalForces(H, V)
+
+
         
     def calculateStiffnessMatrix(self):
         """
@@ -128,40 +141,3 @@ class Truss:
         """
         
         return self.solution
-    
-    def setNodesDisplacements(self):
-        """
-        Sets the displacements of the nodes.
-        """
-        solution = self.getSolution()
-        for i, node in enumerate(self.nodes):
-            H, V = 'H_' + str(i+1), 'V_' + str(i+1)
-            u, v = 'u_' + str(i+1), 'v_' + str(i+1)
-        
-            f_x, f_y = solution[H], solution[V]
-            delta_x, delta_y = solution[u], solution[v]
-            node.setDisplacement(delta_x, delta_y)
-            node.setTotalForces(f_x, f_y)
-    
-    def setBarsStresses(self):
-        """
-        Sets the stresses of the bars.
-        """
-        for bar in self.bars:
-            bar.setBarStress()
-
-    def getBarStresses(self):
-        """
-        Gets the stresses of the bars.
-        """
-        number_of_bars = len(self.bars)
-        N_symbols = ['N_' + str(i+1) for i in range(number_of_bars + 1)]
-        stresses_values =  [bar.getBarStress() for bar in self.bars]       
-        stresses = dict(zip(N_symbols, stresses_values))  
-        
-        return stresses  
-
-        
-
-            
-            
