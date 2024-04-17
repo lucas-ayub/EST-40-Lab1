@@ -70,3 +70,11 @@ class Bar:
         else:
             return np.arctan(dy / dx)
 
+    def getBarStress(self):
+        """
+        Gets the stress of the bar.
+
+        :return: The stress of the bar.
+        :rtype: float
+        """
+        return self.E * (self.right_node.displacement - self.left_node.displacement) / self.L

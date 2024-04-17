@@ -21,6 +21,7 @@ class Truss:
         self.f = self.calculateForceVector()
         self.symbols = []
         self.r, self.u = self.calculateReactionAndDisplacementVectors()
+        self.solution = self.calculateSolution()
         
     def calculateStiffnessMatrix(self):
         """
@@ -89,12 +90,9 @@ class Truss:
             
         return reaction_vector, displacement_vector
 
-    def solve(self):
+    def calculateSolution(self):
         """
-        Solves the system.
-        
-        :return: The solution vector.
-        :rtype: dict
+        Calculates the system solution.
         """
         f = sp.Matrix(self.f) + self.r
         K = sp.Matrix(self.K)
@@ -102,3 +100,19 @@ class Truss:
         solution = sp.solve(K*u - f, self.symbols)
         
         return solution
+
+    def getSolution(self):
+        """
+        Returns the system solution.
+        
+        :return: The solution vector.
+        :rtype: dict
+        """    
+
+        variables = {key: 0 for key in self.symbols}        
+        for key in variables.keys():
+            if key in self.solution.keys():
+                variables[key] = self.solution[key]
+        return variables
+
+            

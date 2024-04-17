@@ -2,6 +2,12 @@ from node import Node
 from bar import Bar
 from truss import Truss
 
+"""
+TODO:
+- Calculate the stress at all bars: check if the current implementation is correct for the method
+- Implement a method in Truss class to insert at all nodes theirs displacements
+"""
+
 node_1 = Node(x = 0, y = 0, fy = 0, fx = 0, fixed_in_x = True, fixed_in_y = True)
 node_2 = Node(x = 10, y = 0, fy = 0, fx = 0, fixed_in_x = False, fixed_in_y = True)
 node_3 = Node(x = 5, y = 8, fx = 20e3, fy = 30e3, fixed_in_x = False, fixed_in_y = False)
@@ -23,4 +29,4 @@ list_of_bars = [bar_1, bar_2, bar_3, bar_4, bar_5, bar_6]
 
 truss = Truss(list_of_nodes = list_of_nodes, list_of_bars = list_of_bars)
 
-print(truss.solve())
+print(truss.getSolution())
