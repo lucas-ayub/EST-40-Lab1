@@ -24,21 +24,9 @@ class Truss:
         self.r, self.u = self.calculateReactionAndDisplacementVectors()
         self.solution = self.calculateSolution()
         self.setNodesDisplacementsAndForces()
+        self.setBarsStressesAndNormals()
     
-    def setNodesDisplacementsAndForces(self):
-        """
-        Sets the displacements and forces of the nodes based on the system solution.
-        """
-        solution = self.getSolution()
-        values = list(solution.values())  
-        print(values)
-        for i in range(1, self.num_nodes + 1):
-            index = (i - 1) * 4
-            H, V, u, v = values[index:index+4]
-            self.nodes[i - 1].setDisplacement(u, v)
-            self.nodes[i - 1].setTotalForces(H, V)
- 
-        
+    
     def calculateStiffnessMatrix(self):
         """
         Calculates the global stiffness matrix of the system.
@@ -130,6 +118,7 @@ class Truss:
         for key in solution.keys():
             if key in variables.keys():
                 solution[key] = variables[key]
+                
         return solution
     
     def getSolution(self):
@@ -139,5 +128,39 @@ class Truss:
         :return: The solution vector.
         :rtype: dict
         """
-        
         return self.solution
+    
+    def setNodesDisplacementsAndForces(self):
+        """
+        Sets the displacements and forces of the nodes based on the system solution.
+        """
+        solution = self.getSolution()
+        values = list(solution.values())  
+        for i in range(1, self.num_nodes + 1):
+            index = (i - 1) * 4
+            H, V, u, v = values[index:index+4]
+            self.nodes[i - 1].setDisplacement(u, v)
+            self.nodes[i - 1].setTotalForces(H, V)
+            
+    def setBarsStressesAndNormals(self):
+        """
+        Sets the normals and stresses of the bars based on the system solution.
+        """
+        for bar in self.bars:
+            bar.calculateBarLength()  
+            bar.setBarNormalAndStress()  
+
+        
+    def getBarsStressesAndNormals(self):
+        """
+        """
+        keys, values = [], []
+        for i, bar in enumerate(self.bars):
+            keys.append('N_' + str(i+1))
+            keys.append('sigma_' + str(i+1))
+            values.append(bar.getBarNormal())
+            values.append(bar.getBarStress())
+        infos = dict(zip(keys, values))
+        return infos
+    
+     

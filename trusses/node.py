@@ -2,6 +2,22 @@ import numpy as np
 
 class Node:
     def __init__(self, x, y, fy, fx, fixed_in_x, fixed_in_y):
+        """
+        Initializes a Node object.
+
+        :param x: The x-coordinate of the node.
+        :type x: float
+        :param y: The y-coordinate of the node.
+        :type y: float
+        :param fy: The vertical external force applied to the node.
+        :type fy: float
+        :param fx: The horizontal external force applied to the node.
+        :type fx: float
+        :param fixed_in_x: Indicates whether the node is fixed in the x-direction.
+        :type fixed_in_x: bool
+        :param fixed_in_y: Indicates whether the node is fixed in the y-direction.
+        :type fixed_in_y: bool
+        """
         self.position = np.array([x, y])
         self.displacement = np.array([0, 0])
         self.external_forces = np.array([fx, fy])
@@ -14,7 +30,6 @@ class Node:
         :return: The position of the node.
         :rtype: np.array
         """    
-    
         return self.position
         
     def setDisplacement(self, delta_x, delta_y):

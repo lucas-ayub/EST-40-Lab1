@@ -30,11 +30,17 @@ list_of_bars = [bar_1, bar_2, bar_3, bar_4, bar_5, bar_6]
 truss = Truss(list_of_nodes = list_of_nodes, list_of_bars = list_of_bars)
 
 print(f"\n\n {truss.getSolution()}")
+print(f"\n\n {truss.getBarsStressesAndNormals()}")
 
-for i, node in enumerate(list_of_nodes):
-    print(f'node_{i+1}:\n')
-    print(f'u_{i+1} = {node.getDisplacement()[0]}, v_{i+1} = {node.getDisplacement()[1]}\n')
-    print(f'H_{i+1} = {node.getTotalForces()[0]}, V_{i+1} = {node.getTotalForces()[1]}\n')
+# for i, node in enumerate(list_of_nodes):
+#     print(f'node_{i+1}:\n')
+#     print(f'u_{i+1} = {node.getDisplacement()[0]}, v_{i+1} = {node.getDisplacement()[1]}\n')
+#     print(f'H_{i+1} = {node.getTotalForces()[0]}, V_{i+1} = {node.getTotalForces()[1]}\n')
+
+for i, bar in enumerate(list_of_bars):
+    print(f'bar_{i+1}:\n')
+    print(f'N_{i+1} = {bar.getBarNormal()}\n')
+    print(f'sigma_{i+1} = {bar.getBarStress()}\n')
 
 # for i, node in enumerate(list_of_nodes):
 #     print(f'node_{i+1}:')
