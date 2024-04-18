@@ -31,13 +31,13 @@ class Truss:
         """
         solution = self.getSolution()
         values = list(solution.values())  
-        for i in range(0, len(values), 4):
-            H, V, u, v = values[i:i+4]
-            node_index = (i // 4) + 1  
-            self.nodes[node_index - 1].setDisplacement(u, v)
-            self.nodes[node_index - 1].setTotalForces(H, V)
-
-
+        print(values)
+        for i in range(1, self.num_nodes + 1):
+            index = (i - 1) * 4
+            H, V, u, v = values[index:index+4]
+            self.nodes[i - 1].setDisplacement(u, v)
+            self.nodes[i - 1].setTotalForces(H, V)
+ 
         
     def calculateStiffnessMatrix(self):
         """

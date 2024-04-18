@@ -46,7 +46,7 @@ class Node:
         :param r_y: The total vertical force of the node.
         :type r_y: float
         """
-        self.displacement = np.array([r_x, r_y])
+        self.external_forces = np.array([r_x, r_y])
         
     def getTotalForces(self):
         """
