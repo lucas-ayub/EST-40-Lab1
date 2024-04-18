@@ -20,7 +20,7 @@ class Node:
         """
         self.position = np.array([x, y], dtype = np.float64)
         self.displacement = np.array([0, 0], dtype = np.float64)
-        self.external_forces = np.array([fx, fy])
+        self.external_forces = np.array([fx, fy], dtype = np.float64)
         self.constraints = {'isFixedInX': fixed_in_x, 'isFixedInY': fixed_in_y}
         
     def updatePosition(self):
@@ -28,9 +28,7 @@ class Node:
         Updates the position of the node.
         """
         for i in range(len(self.position)):
-            self.position[i] = self.position[i] + self.displacement[i]
-             # self.position += self.displacement
-   
+            self.position[i] = self.position[i] + self.displacement[i]   
    
     def getPosition(self):
         """
@@ -71,6 +69,17 @@ class Node:
         :type r_y: float
         """
         self.external_forces = np.array([r_x, r_y])
+        
+    def addNewForce(self, delta_f_x, delta_f_y):
+        """
+        Updates the forces of the node.
+
+        :param f_x: The horizontal force to be added to the node.
+        :type f_x: float
+        :param f_y: The vertical force to be added to the node.
+        :type f_y: float
+        """
+        self.external_forces += np.array([delta_f_x, delta_f_y], dtype = np.float64)
         
     def getTotalForces(self):
         """

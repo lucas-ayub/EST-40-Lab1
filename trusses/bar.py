@@ -2,7 +2,7 @@ import numpy as np
 from node import *
 
 class Bar:
-    def __init__(self, left_node, right_node, E, A):
+    def __init__(self, left_node, right_node, q, E, A):
         """
         Initializes a Bar object.
 
@@ -28,6 +28,7 @@ class Bar:
         self.L = self.calculateBarLength()
         self.angle = self.getBarAngle()
         self.stiffness_matrix = self.calculateStiffnessMatrix()
+        self.load = q
         self.N = 0
         self.sigma = 0
         
@@ -89,6 +90,15 @@ class Bar:
                 return -np.pi / 2  
         else:
             return np.arctan(dy / dx)
+        
+    def updateNodeForces(self):
+        """
+        Computes the load forces in the bar nodes.
+        """
+        factor = self.load * self.L / 2
+        delta_f_x, delta_f_y = factor * np.cos(self.angle), factor * np.sin(self.angle)
+        self.left_node.addNewForce(delta_f_x, delta_f_y)
+        self.right_node.addNewForce(delta_f_x, delta_f_y)
 
     def setBarNormalAndStress(self):
         """

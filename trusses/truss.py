@@ -63,6 +63,8 @@ class Truss:
         """
         force_vector = np.zeros(2 * len(self.nodes))
 
+        for bar in self.bars:
+            bar.updateNodeForces()
         for i, node in enumerate(self.nodes):
             force_vector[2*i] += node.external_forces[0]  
             force_vector[2*i + 1] += node.external_forces[1]  
@@ -210,8 +212,8 @@ class Truss:
 
         ax.legend()
         ax.set_aspect('equal', 'box')
-        plt.xlabel('X')
-        plt.ylabel('Y')
+        plt.xlabel('X (m)')
+        plt.ylabel('Y (m)')
         plt.title(f'Truss  (Displacement Factor: {displacement_scale})')
         plt.grid(True)
         plt.show()

@@ -18,12 +18,12 @@ list_of_nodes = [node_1, node_2, node_3, node_4]
 E = 200e9
 A = 900e-6
 
-bar_1 = Bar(left_node = node_1, right_node = node_2,  E = E, A = A)
-bar_2 = Bar(left_node = node_2, right_node = node_3, E = E, A = A)
-bar_3 = Bar(left_node = node_3, right_node = node_1, E = E, A = A)
-bar_4 = Bar(left_node = node_1, right_node = node_4, E = E, A = A)
-bar_5 = Bar(left_node = node_2, right_node = node_4, E = E, A = A)
-bar_6 = Bar(left_node = node_3, right_node = node_4, E = E, A = A)
+bar_1 = Bar(left_node = node_1, right_node = node_2, q = 0, E = E, A = A)
+bar_2 = Bar(left_node = node_3, right_node = node_2, q = 0, E = E, A = A)
+bar_3 = Bar(left_node = node_1, right_node = node_3, q = 0, E = E, A = A)
+bar_4 = Bar(left_node = node_1, right_node = node_4, q = 0, E = E, A = A)
+bar_5 = Bar(left_node = node_4, right_node = node_2, q = 0, E = E, A = A)
+bar_6 = Bar(left_node = node_3, right_node = node_4, q = 0, E = E, A = A)
 
 list_of_bars = [bar_1, bar_2, bar_3, bar_4, bar_5, bar_6]
 
@@ -48,6 +48,6 @@ print(f"\n\n {truss.getSolution()}")
 #     print(f'u_{i+1} = {node.getDisplacement()[0]}, v_{i+1} = {node.getDisplacement()[1]}')
 #     print(f'H_{i+1} = {node.getTotalForces()[0]}, V_{i+1} = {node.getTotalForces()[1]}')    
 
-truss.plot_truss(displacement_scale = 200)
+truss.plot_truss(displacement_scale = 1000)
 # print(truss.nodes_initial_positions == truss.nodes_final_positions)
 # print(truss.nodes_final_positions)

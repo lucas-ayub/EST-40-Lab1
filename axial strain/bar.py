@@ -39,5 +39,5 @@ class Bar:
         """
         Computes the load forces in the bar nodes.
         """
-        self.left_node.addNewForce(self.load*self.L)
-        self.right_node.addNewForce(self.load*self.L)
+        self.left_node.addNewForce(self.load*self.L/2)
+        self.right_node.addNewForce(self.load*self.L/2)
