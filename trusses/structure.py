@@ -6,10 +6,10 @@ import sympy as sp
 import matplotlib.pyplot as plt
 
 
-class Truss:
+class Structure:
     def __init__(self, list_of_nodes, list_of_bars):
         """
-        Initializes a Truss object.
+        Initializes a structure object.
 
         :param list_of_nodes: List of nodes in the system.
         :type list_of_nodes: list of _Node_
@@ -175,13 +175,13 @@ class Truss:
         infos = dict(zip(keys, values))
         return infos
 
-    def plot_truss(self, displacement_scale = 1.0):
+    def plotStructure(self, displacement_scale = 1.0):
         """
-        Plots the initial and final configurations of the truss.
+        Plots the initial and final configurations of the structure.
         
         :param displacement_scale: Scale factor for displacements, default is 1.0.
         """
-        fig, ax = plt.subplots()
+        _, ax = plt.subplots()
         
         initial_x = [position[0] for position in self.nodes_initial_positions]
         initial_y = [position[1] for position in self.nodes_initial_positions]
@@ -214,6 +214,6 @@ class Truss:
         ax.set_aspect('equal', 'box')
         plt.xlabel('X (m)')
         plt.ylabel('Y (m)')
-        plt.title(f'Truss  (Displacement Factor: {displacement_scale})')
+        plt.title(f'Structure  (Displacement Factor: {displacement_scale})')
         plt.grid(True)
         plt.show()

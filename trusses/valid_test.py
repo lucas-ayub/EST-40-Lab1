@@ -1,6 +1,6 @@
 from node import Node
 from bar import Bar
-from truss import Truss
+from trusses.structure import Truss
 
 node_1 = Node(x = 0, y = 0, fy = 0, fx = 0, fixed_in_x = True, fixed_in_y = True)
 node_2 = Node(x = 40e-2, y = -30e-2, fy = -20e3, fx = 0, fixed_in_x = False, fixed_in_y = False)

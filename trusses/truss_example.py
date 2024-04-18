@@ -1,11 +1,10 @@
 from node import Node
 from bar import Bar
-from truss import *
+from structure import *
 
 """
 TODO:
 - Calculate the stress at all bars: check if the current implementation is correct for the method
-- Implement a method in Truss class to insert at all nodes theirs displacements
 """
 
 node_1 = Node(x = 0, y = 0, fy = 0, fx = 0, fixed_in_x = True, fixed_in_y = True)
@@ -27,7 +26,7 @@ bar_6 = Bar(left_node = node_3, right_node = node_4, q = 0, E = E, A = A)
 
 list_of_bars = [bar_1, bar_2, bar_3, bar_4, bar_5, bar_6]
 
-truss = Truss(list_of_nodes = list_of_nodes, list_of_bars = list_of_bars)
+truss = Structure(list_of_nodes = list_of_nodes, list_of_bars = list_of_bars)
 
 print(f"\n\n {truss.getSolution()}")
 # print(f"\n\n {truss.getBarsStressesAndNormals()}")
@@ -48,6 +47,6 @@ print(f"\n\n {truss.getSolution()}")
 #     print(f'u_{i+1} = {node.getDisplacement()[0]}, v_{i+1} = {node.getDisplacement()[1]}')
 #     print(f'H_{i+1} = {node.getTotalForces()[0]}, V_{i+1} = {node.getTotalForces()[1]}')    
 
-truss.plot_truss(displacement_scale = 1000)
+truss.plotStructure(displacement_scale = 1000)
 # print(truss.nodes_initial_positions == truss.nodes_final_positions)
 # print(truss.nodes_final_positions)

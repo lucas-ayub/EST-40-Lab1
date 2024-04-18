@@ -1,6 +1,6 @@
 from node import *
 from bar import *
-from truss import *
+from structure import *
 
 
 E1 = 0.8e9
@@ -11,6 +11,9 @@ P = 25e3
 q = 10e3
 L1 = 150e-3
 L2 = 262.5e-3
+
+q1 = -2*q
+q2 = q
 
 node_1 = Node(x = 0, y = 0, fx = 0, fy = 0, fixed_in_x = True, fixed_in_y = False)
 node_2 = Node(x = L1, y = 0, fx = -2*P, fy = 0, fixed_in_x = False, fixed_in_y = False)
@@ -23,7 +26,7 @@ bar_2 = Bar(left_node = node_2, right_node = node_3, q = q, E = E2, A = A2)
 
 list_of_bars = [bar_1, bar_2]
 
-truss = Truss(list_of_nodes = list_of_nodes, list_of_bars = list_of_bars)
+truss = Structure(list_of_nodes = list_of_nodes, list_of_bars = list_of_bars)
 
 print(f"\n\n {truss.getSolution()}")
-truss.plot_truss(displacement_scale = 1000)
+truss.plotStructure(displacement_scale = 1000)
