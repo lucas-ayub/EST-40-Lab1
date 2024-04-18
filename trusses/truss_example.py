@@ -30,9 +30,10 @@ list_of_bars = [bar_1, bar_2, bar_3, bar_4, bar_5, bar_6]
 truss = Truss(list_of_nodes = list_of_nodes, list_of_bars = list_of_bars)
 
 print(f"\n\n {truss.getSolution()}")
-print(f"\n\n {truss.getBarsStressesAndNormals()}")
+# print(f"\n\n {truss.getBarsStressesAndNormals()}")
 
-# for i, node in enumerate(list_of_nodes):
+
+# for i, node in enumerate(list_of_nodes):      
 #     print(f'node_{i+1}:\n')
 #     print(f'u_{i+1} = {node.getDisplacement()[0]}, v_{i+1} = {node.getDisplacement()[1]}\n')
 #     print(f'H_{i+1} = {node.getTotalForces()[0]}, V_{i+1} = {node.getTotalForces()[1]}\n')
@@ -40,9 +41,13 @@ print(f"\n\n {truss.getBarsStressesAndNormals()}")
 # for i, bar in enumerate(list_of_bars):
 #     print(f'bar_{i+1}:\n')
 #     print(f'N_{i+1} = {bar.getBarNormal()}\n')
-#     print(f'sigma_{i+1} = {bar.getBarStress()}\n')
+    # print(f'sigma_{i+1} = {bar.getBarStress()}\n')
 
 # for i, node in enumerate(list_of_nodes):
 #     print(f'node_{i+1}:')
 #     print(f'u_{i+1} = {node.getDisplacement()[0]}, v_{i+1} = {node.getDisplacement()[1]}')
 #     print(f'H_{i+1} = {node.getTotalForces()[0]}, V_{i+1} = {node.getTotalForces()[1]}')    
+
+truss.plot_truss(displacement_scale = 200)
+# print(truss.nodes_initial_positions == truss.nodes_final_positions)
+# print(truss.nodes_final_positions)

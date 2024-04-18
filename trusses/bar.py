@@ -95,8 +95,12 @@ class Bar:
         Calculates the stress and normal force of the bar.
         """
         Li = self.L
+        # print(Li)
         Lf = self.calculateBarLength()  
-        self.sigma = self.E * (Lf - self.L) / self.L  
+        # print(Lf)
+        # print((Lf - Li) / Li)
+        # print('\n')
+        self.sigma = self.E * (Lf - Li) / Li  
         self.N = self.sigma * self.A  
 
 

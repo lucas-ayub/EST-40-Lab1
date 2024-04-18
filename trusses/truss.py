@@ -3,6 +3,7 @@ from bar import Bar
 
 import numpy as np
 import sympy as sp
+import matplotlib.pyplot as plt
 
 
 class Truss:
@@ -23,10 +24,12 @@ class Truss:
         self.symbols = []
         self.r, self.u = self.calculateReactionAndDisplacementVectors()
         self.solution = self.calculateSolution()
+        self.nodes_initial_positions = [node.getPosition() for node in self.nodes]
         self.setNodesDisplacementsAndForces()
         self.updateNodesPositions()
         self.setBarsStressesAndNormals()
-    
+        self.nodes_final_positions = [node.getPosition() for node in self.nodes]
+
     
     def calculateStiffnessMatrix(self):
         """
@@ -169,4 +172,46 @@ class Truss:
             values.append(bar.getBarStress())
         infos = dict(zip(keys, values))
         return infos
-    
+
+    def plot_truss(self, displacement_scale = 1.0):
+        """
+        Plots the initial and final configurations of the truss.
+        
+        :param displacement_scale: Scale factor for displacements, default is 1.0.
+        """
+        fig, ax = plt.subplots()
+        
+        initial_x = [position[0] for position in self.nodes_initial_positions]
+        initial_y = [position[1] for position in self.nodes_initial_positions]
+        ax.plot(initial_x, initial_y, 'ko', label='Initial')
+
+        for bar in self.bars:
+            left_initial_pos = bar.left_node.getPosition()
+            right_initial_pos = bar.right_node.getPosition()
+            ax.plot([left_initial_pos[0], right_initial_pos[0]], [left_initial_pos[1], right_initial_pos[1]], 'k-')
+
+        for bar in self.bars:
+            left_initial_pos = bar.left_node.getPosition()
+            right_initial_pos = bar.right_node.getPosition()
+            left_final_pos = None
+            right_final_pos = None
+            for idx, pos in enumerate(self.nodes_final_positions):
+                if np.array_equal(pos, left_initial_pos):
+                    left_final_pos = pos + displacement_scale * bar.left_node.getDisplacement()
+                if np.array_equal(pos, right_initial_pos):
+                    right_final_pos = pos + displacement_scale * bar.right_node.getDisplacement()
+                if left_final_pos is not None and right_final_pos is not None:
+                    break
+            ax.plot([left_final_pos[0], right_final_pos[0]], [left_final_pos[1], right_final_pos[1]], 'r--')
+        
+        final_x = [position[0] + displacement_scale * node.getDisplacement()[0] for position, node in zip(self.nodes_final_positions, self.nodes)]
+        final_y = [position[1] + displacement_scale * node.getDisplacement()[1] for position, node in zip(self.nodes_final_positions, self.nodes)]
+        ax.plot(final_x, final_y, 'ro', label='Final')
+
+        ax.legend()
+        ax.set_aspect('equal', 'box')
+        plt.xlabel('X')
+        plt.ylabel('Y')
+        plt.title(f'Truss  (Displacement Factor: {displacement_scale})')
+        plt.grid(True)
+        plt.show()
