@@ -25,7 +25,7 @@ class Bar:
         self.right_node = right_node
         self.E = E
         self.A = A
-        self.L = np.linalg.norm(self.left_node.position - self.right_node.position)  
+        self.L = self.calculateBarLength()
         self.angle = self.getBarAngle()
         self.stiffness_matrix = self.calculateStiffnessMatrix()
         self.N = 0
@@ -94,6 +94,7 @@ class Bar:
         """
         Calculates the stress and normal force of the bar.
         """
+        Li = self.L
         Lf = self.calculateBarLength()  
         self.sigma = self.E * (Lf - self.L) / self.L  
         self.N = self.sigma * self.A  

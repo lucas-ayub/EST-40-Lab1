@@ -18,10 +18,19 @@ class Node:
         :param fixed_in_y: Indicates whether the node is fixed in the y-direction.
         :type fixed_in_y: bool
         """
-        self.position = np.array([x, y])
-        self.displacement = np.array([0, 0])
+        self.position = np.array([x, y], dtype = np.float64)
+        self.displacement = np.array([0, 0], dtype = np.float64)
         self.external_forces = np.array([fx, fy])
         self.constraints = {'isFixedInX': fixed_in_x, 'isFixedInY': fixed_in_y}
+        
+    def updatePosition(self):
+        """
+        Updates the position of the node.
+        """
+        for i in range(len(self.position)):
+            self.position[i] = self.position[i] + self.displacement[i]
+             # self.position += self.displacement
+   
    
     def getPosition(self):
         """

@@ -24,6 +24,7 @@ class Truss:
         self.r, self.u = self.calculateReactionAndDisplacementVectors()
         self.solution = self.calculateSolution()
         self.setNodesDisplacementsAndForces()
+        self.updateNodesPositions()
         self.setBarsStressesAndNormals()
     
     
@@ -142,17 +143,23 @@ class Truss:
             self.nodes[i - 1].setDisplacement(u, v)
             self.nodes[i - 1].setTotalForces(H, V)
             
+    def updateNodesPositions(self):
+        """
+        Updates all nodes positions based after their displacements.
+        """
+        for node in self.nodes:
+            node.updatePosition()
+            
     def setBarsStressesAndNormals(self):
         """
         Sets the normals and stresses of the bars based on the system solution.
         """
         for bar in self.bars:
-            bar.calculateBarLength()  
             bar.setBarNormalAndStress()  
-
         
     def getBarsStressesAndNormals(self):
         """
+        Gets the stresses and normals of the bars.
         """
         keys, values = [], []
         for i, bar in enumerate(self.bars):
@@ -163,4 +170,3 @@ class Truss:
         infos = dict(zip(keys, values))
         return infos
     
-     
