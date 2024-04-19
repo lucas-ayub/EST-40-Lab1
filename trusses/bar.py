@@ -1,6 +1,39 @@
 import numpy as np
 from node import *
 
+def discretizateBar(left_node, right_node, q, E, A, n_elements):
+    """
+    Function to discretize a bar between two given nodes.
+
+    Parameters:
+    - left_node (Node): The left node of the bar.
+    - right_node (Node): The right node of the bar.
+    - q (float): Distributed load along the bar.
+    - E (float): Young's modulus of the material.
+    - A (float): Cross-sectional area of the bar.
+    - n_elements (int): Number of elements to discretize the bar into.
+
+    Returns:                  
+    - bars (list): List of discretized bars.
+    - nodes (list): List of intermediate nodes between left_node and right_node.
+    """
+    left_node_position, right_node_position = left_node.getPosition(), right_node.getPosition()
+    left_node_x, left_node_y = left_node_position[0], left_node_position[1]
+    right_node_x, right_node_y = right_node_position[0], right_node_position[1]
+    dx = (right_node_x - left_node_x) / n_elements
+    dy = (right_node_y - left_node_y) / n_elements
+    bars = []
+    nodes = []
+    for i in range(1, n_elements):
+        node = Node(x = left_node_x + i*dx, y = left_node_y + i*dy, fx = 0, fy = 0, fixed_in_x = False, fixed_in_y = False)
+        nodes.append(node)
+    for i in range(n_elements):
+        node_i = left_node if i == 0 else nodes[i-1]
+        node_j = right_node if i == n_elements-1 else nodes[i]
+        bar = Bar(left_node = node_i, right_node = node_j, q = q, E = E, A = A)
+        bars.append(bar)
+    return bars, nodes
+
 class Bar:
     def __init__(self, left_node, right_node, q, E, A):
         """

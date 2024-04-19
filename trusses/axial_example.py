@@ -19,14 +19,26 @@ node_1 = Node(x = 0, y = 0, fx = 0, fy = 0, fixed_in_x = True, fixed_in_y = Fals
 node_2 = Node(x = L1, y = 0, fx = -2*P, fy = 0, fixed_in_x = False, fixed_in_y = False)
 node_3 = Node(x = L2, y = 0, fx = 0, fy = 0, fixed_in_x = True, fixed_in_y = False)
 
-list_of_nodes = [node_1, node_2, node_3]
+list_of_nodes = []
+list_of_nodes.append(node_1)
 
-bar_1 = Bar(left_node = node_1, right_node = node_2, q = -2*q, E = E1, A = A1)
-bar_2 = Bar(left_node = node_2, right_node = node_3, q = q, E = E2, A = A2)
+n1 = 70
+bars_between_1_2, nodes_between_1_2 = discretizateBar(node_1, node_2, q1, E1, A1, n1)
 
-list_of_bars = [bar_1, bar_2]
+list_of_nodes += nodes_between_1_2
+list_of_nodes.append(node_2)
 
-truss = Structure(list_of_nodes = list_of_nodes, list_of_bars = list_of_bars)
+list_of_bars = bars_between_1_2
 
-print(f"\n\n {truss.getSolution()}")
-truss.plotStructure(displacement_scale = 1000)
+n2 = 70
+bars_between_2_3, nodes_between_2_3 = discretizateBar(node_2, node_3, q2, E2, A2, n2)
+
+list_of_nodes += nodes_between_2_3
+list_of_nodes.append(node_3)
+
+list_of_bars += bars_between_2_3
+
+axial_bar = Structure(list_of_nodes = list_of_nodes, list_of_bars = list_of_bars)
+
+print(f"\n\n {axial_bar.getSolution()}")
+axial_bar.plotStructure(displacement_scale = 1000)
