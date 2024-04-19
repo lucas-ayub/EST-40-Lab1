@@ -59,6 +59,7 @@ class Bar:
         self.E = E
         self.A = A
         self.L = self.calculateBarLength()
+        self.Li = self.calculateBarLength()
         self.angle = self.getBarAngle()
         self.stiffness_matrix = self.calculateStiffnessMatrix()
         self.load = q
@@ -137,14 +138,10 @@ class Bar:
         """
         Calculates the stress and normal force of the bar.
         """
-        Li = self.L
-        # print(Li)
-        Lf = self.calculateBarLength()  
-        # print(Lf)
-        # print((Lf - Li) / Li)
-        # print('\n')
-        self.sigma = self.E * (Lf - Li) / Li  
-        self.N = self.sigma * self.A  
+        self.L = self.calculateBarLength() 
+        sigma = self.E * (self.L - self.Li) / self.Li 
+        self.sigma = sigma 
+        self.N = sigma * self.A  
 
 
     def getBarNormal(self):

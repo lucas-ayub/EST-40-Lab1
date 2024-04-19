@@ -27,8 +27,8 @@ class Structure:
         self.nodes_initial_positions = [node.getPosition() for node in self.nodes]
         self.setNodesDisplacementsAndForces()
         self.updateNodesPositions()
-        self.setBarsStressesAndNormals()
         self.nodes_final_positions = [node.getPosition() for node in self.nodes]
+        self.setBarsStressesAndNormals()
 
     
     def calculateStiffnessMatrix(self):
@@ -163,22 +163,23 @@ class Structure:
         """
         for node in self.nodes:
             node.updatePosition()
-            
+
+    
     def setBarsStressesAndNormals(self):
         """
         Sets the normals and stresses of the bars based on the system solution.
         """
         for bar in self.bars:
-            bar.setBarNormalAndStress()  
-        
+            bar.setBarNormalAndStress()
+            
     def getBarsStressesAndNormals(self):
         """
         Gets the stresses and normals of the bars.
         """
         keys, values = [], []
         for i, bar in enumerate(self.bars):
-            keys.append('N_' + str(i+1))
-            keys.append('sigma_' + str(i+1))
+            keys.append(f'N_{i+1}')
+            keys.append(f'sigma_{i+1}')
             values.append(bar.getBarNormal())
             values.append(bar.getBarStress())
         infos = dict(zip(keys, values))
