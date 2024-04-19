@@ -52,6 +52,15 @@ class Structure:
             global_matrix[2*j:2*(j+1), 2*j:2*(j+1)] += local_matrix[2:, 2:]
 
         return global_matrix
+    
+    def getStiffnessMatrix(self):
+        """
+        Returns the global stiffness matrix of the system.
+
+        :return: The global stiffness matrix.
+        :rtype: numpy.ndarray
+        """
+        return self.K
 
             
     def calculateForceVector(self):
