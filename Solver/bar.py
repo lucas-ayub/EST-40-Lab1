@@ -11,7 +11,7 @@ def discretizateBar(left_node, right_node, q, E, A, n_elements):
     - q (float): Distributed load along the bar.
     - E (float): Young's modulus of the material.
     - A (float): Cross-sectional area of the bar.
-    - n_elements (int): Number of elements to discretize the bar into.
+    - n_elements (int): Number of elements to discretize the bar into (number of nodes + 1 between left and right node).
 
     Returns:                  
     - bars (list): List of discretized bars.
