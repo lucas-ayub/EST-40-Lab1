@@ -27,7 +27,7 @@ list_of_nodes = []
 list_of_nodes.append(node_1)
 
 # Creating elements between node_1 and node_2
-n1 = 3
+n1 = 2
 bars_between_1_2, nodes_between_1_2 = discretizateBar(node_1, node_2, q1, E1, A1, n1)
 
 list_of_nodes += nodes_between_1_2
@@ -36,7 +36,7 @@ list_of_nodes.append(node_2)
 list_of_bars = bars_between_1_2
 
 # Creating elements between node_2 and node_3
-n2 = 2
+n2 = 3
 bars_between_2_3, nodes_between_2_3 = discretizateBar(node_2, node_3, q2, E2, A2, n2)
 
 list_of_nodes += nodes_between_2_3

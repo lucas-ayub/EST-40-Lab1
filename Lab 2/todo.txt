@@ -1,0 +1,10 @@
+- Cargas 
+    1: Escrever funções de forma
+    2: Calcular o vetor de forças local
+    3: Rotacionar para o sistema global
+    - Consertar vetores de forças 
+
+- Tipos de apoio
+    Momento, Força de reação, deslocamento e giro
+
+- Matriz de rotação

@@ -1,1 +1,1 @@
-# EST-40-Lab1
+# EST-40-Labs
