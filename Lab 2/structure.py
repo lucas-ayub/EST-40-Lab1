@@ -1,5 +1,5 @@
-from node import Node
-from bar import Bar
+from node import *
+from bar import *
 
 import numpy as np
 import sympy as sp
@@ -38,7 +38,7 @@ class Structure:
         :return: The global stiffness matrix.
         :rtype: numpy.ndarray
         """
-        global_matrix = np.zeros((2 * self.num_nodes, 2 * self.num_nodes))
+        global_matrix = np.zeros((3 * self.num_nodes, 3 * self.num_nodes))
 
         for bar in self.bars:
             i = self.nodes.index(bar.left_node)
@@ -70,7 +70,7 @@ class Structure:
         :return: The force vector.
         :rtype: numpy.ndarray
         """
-        force_vector = np.zeros(2 * len(self.nodes))
+        force_vector = np.zeros(3 * len(self.nodes))
 
         for bar in self.bars:
             bar.updateNodeForces()

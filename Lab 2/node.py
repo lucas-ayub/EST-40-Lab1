@@ -1,21 +1,14 @@
 import numpy as np
 
 class Node:
-    def __init__(self, x, y, global_f_x, local_f_x, global_f_y, local_f_y, support_type, prescribed_displacement_x, prescribed_displacement_y, prescribed_rotation):
+    def __init__(self, x, y, support_type, prescribed_displacement_x, prescribed_displacement_y, prescribed_rotation, 
+    global_f_x=0, local_f_x=0, global_f_y=0, local_f_y=0, external_momentum=0):
         """
         Initializes a Node object.
         :param x: The x-coordinate of the node.
         :type x: float
         :param y: The y-coordinate of the node.
         :type y: float
-        :param global_f_x: The horizontal external force applied to the node.
-        :type global_f_x: float
-        :param local_f_x: The horizontal external force applied to the node in local coordinates.
-        :type local_f_x: float
-        :param global_f_y: The vertical external force applied to the node.
-        :type global_f_y: float
-        :param local_f_y: The vertical external force applied to the node in local coordinates.
-        :type local_f_y: float
         :param support_type: Indicates the support type.
         :type support_type: str
         :param prescribed_displacement_x: The prescribed displacement in x of the node.
@@ -24,16 +17,25 @@ class Node:
         :type prescribed_displacement_y: float
         :param prescribed_rotation: The prescribed rotation of the node.
         :type prescribed_rotation: float
+        :param global_f_x: The horizontal external force applied to the node.
+        :type global_f_x: float
+        :param local_f_x: The horizontal external force applied to the node in local coordinates.
+        :type local_f_x: float
+        :param global_f_y: The vertical external force applied to the node.
+        :type global_f_y: float
+        :param local_f_y: The vertical external force applied to the node in local coordinates.
+        :type local_f_y: float
+        :param external_momentum: The external momentum applied to the node
+        :type external_momentum: float
         """
         self.position = np.array([x, y], dtype=np.float64)
         self.displacement = np.array([0, 0], dtype=np.float64)
         self.support = support_type
         self.global_forces = np.array([global_f_x, global_f_y], dtype=np.float64)
-        self.local_forces = np.array([local_f_x, global_f_y], dtype=np.float64)
-        # TODO: Prescribed as a list instead of a array to modify it later and to differ if the user knows a value of displacement or if it is actually zero
-        self.prescribed_displacement = [prescribed_displacement_x,prescribed_displacement_y]
-        self.prescribed_rotation = prescribed_rotation
-        
+        self.local_forces = np.array([local_f_x, local_f_y], dtype=np.float64)
+        self.momentum = external_momentum
+        self.prescribed_displacement = [prescribed_displacement_x, prescribed_displacement_y]
+        self.prescribed_rotation = prescribed_rotation        
         
     def updatePosition(self):
         """
@@ -71,33 +73,4 @@ class Node:
         """
         return self.displacement
         
-    def setTotalForces(self, r_x, r_y):
-        """
-        Sets the displacement of the node.
-
-        :param r_x: The total horizontal force of the node.
-        :type r_x: float
-        :param r_y: The total vertical force of the node.
-        :type r_y: float
-        """
-        self.external_forces = np.array([r_x, r_y])
         
-    def addNewForce(self, delta_f_x, delta_f_y):
-        """
-        Updates the forces of the node.
-
-        :param f_x: The horizontal force to be added to the node.
-        :type f_x: float
-        :param f_y: The vertical force to be added to the node.
-        :type f_y: float
-        """
-        self.external_forces += np.array([delta_f_x, delta_f_y], dtype = np.float64)
-        
-    def getTotalForces(self):
-        """
-        Gets the total forces of the node.
-
-        :return: The total forces of the node.
-        :rtype: numpy.ndarray
-        """
-        return self.external_forces

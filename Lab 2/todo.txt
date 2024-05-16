@@ -1,8 +1,17 @@
+- Tipos de apoio:
+    1: Tentar resolver o problema dos deslocamentos preescritos 
+        Definir tipo de apoio, atributo da classe nó que armazena essa info
+
+
 - Cargas 
     1: Escrever funções de forma
     2: Calcular o vetor de forças local
     3: Rotacionar para o sistema global
     - Consertar vetores de forças 
+
+- Forças concentradas:
+    1: Posso ter forças globais ou locais concentradas aplicadas em cada nó 
+    2: Posso além de forças ter momentos
 
 - Tipos de apoio
     Momento, Força de reação, deslocamento e giro
