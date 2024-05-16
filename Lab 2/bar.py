@@ -255,6 +255,15 @@ class Bar:
         global_force_vector = rotated_force_vector + concatenated_node_forces
         
         return global_force_vector
+    
+    def getForceVector(self):
+        """
+        Get the force vector of the bar.
+        
+        :return: The force vector.
+        :rtype: numpy.ndarray
+        """
+        return self.force_vector
                    
     def calculateStiffnessMatrix(self):
         """

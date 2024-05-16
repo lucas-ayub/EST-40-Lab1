@@ -19,6 +19,7 @@ class Structure:
         self.nodes = list_of_nodes
         self.bars = list_of_bars
         self.num_nodes = len(self.nodes)
+        self.dof_per_node = 3
         self.K = self.calculateStiffnessMatrix()
         self.f = self.calculateForceVector()
         self.symbols = []
@@ -30,7 +31,7 @@ class Structure:
         self.nodes_final_positions = [node.getPosition() for node in self.nodes]
         self.setBarsStressesAndNormals()
 
-    
+
     def calculateStiffnessMatrix(self):
         """
         Calculates the global stiffness matrix of the system.
@@ -38,21 +39,16 @@ class Structure:
         :return: The global stiffness matrix.
         :rtype: numpy.ndarray
         """
-        global_matrix = np.zeros((3 * self.num_nodes, 3 * self.num_nodes))
+        global_size = self.num_nodes * self.dof_per_node
+        global_matrix = np.zeros((global_size, global_size))
 
-        for bar in self.bars:
-            i = self.nodes.index(bar.left_node)
-            j = self.nodes.index(bar.right_node)
-            
-            local_matrix = bar.getStiffnessMatrix()
-            
-            global_matrix[2*i:2*(i+1), 2*i:2*(i+1)] += local_matrix[:2, :2]
-            global_matrix[2*i:2*(i+1), 2*j:2*(j+1)] += local_matrix[:2, 2:]
-            global_matrix[2*j:2*(j+1), 2*i:2*(i+1)] += local_matrix[2:, :2]
-            global_matrix[2*j:2*(j+1), 2*j:2*(j+1)] += local_matrix[2:, 2:]
+        for i, bar_matrix in enumerate(self.bars):
+            start_index = i * self.dof_per_node
+            end_index = start_index + 2 * self.dof_per_node
+            global_matrix[start_index:end_index, start_index:end_index] += bar_matrix
 
         return global_matrix
-    
+
     def getStiffnessMatrix(self):
         """
         Returns the global stiffness matrix of the system.
@@ -61,8 +57,7 @@ class Structure:
         :rtype: numpy.ndarray
         """
         return self.K
-
-            
+ 
     def calculateForceVector(self):
         """
         Calculates the force vector of the system.
@@ -70,13 +65,16 @@ class Structure:
         :return: The force vector.
         :rtype: numpy.ndarray
         """
-        force_vector = np.zeros(3 * len(self.nodes))
+        force_vector = np.zeros(self.dof_per_node * len(self.nodes))
 
-        for bar in self.bars:
-            bar.updateNodeForces()
-        for i, node in enumerate(self.nodes):
-            force_vector[2*i] += node.external_forces[0]  
-            force_vector[2*i + 1] += node.external_forces[1]  
+        for i, bar in enumerate(self.bars):
+            bar_global_force_vector = bar.getForceVector()
+            
+            left_node_index = i * self.dof_per_node
+            right_node_index = (i + 1) * self.dof_per_node
+            
+            force_vector[left_node_index:left_node_index+self.dof_per_node] += bar_global_force_vector[:self.dof_per_node]
+            force_vector[right_node_index:right_node_index+self.dof_per_node] += bar_global_force_vector[self.dof_per_node:]
 
         return force_vector
             
@@ -87,21 +85,47 @@ class Structure:
         :return: The reaction force vector and the displacement vector.
         :rtype: sympy.Matrix, sympy.Matrix
         """
-        reaction_vector = sp.zeros(2*self.num_nodes, 1)
-        displacement_vector = sp.zeros(2*self.num_nodes, 1)
+        reaction_vector = sp.zeros(self.dof_per_node*self.num_nodes, 1)
+        displacement_vector = sp.zeros(self.dof_per_node*self.num_nodes, 1)
         
         for i, node in enumerate(self.nodes):
-            H_symbol, V_symbol = 'H_' + str(i+1), 'V_' + str(i+1)
-            u_symbol, v_symbol = 'u_' + str(i+1), 'v_' + str(i+1)
+            H_symbol, V_symbol, M_symbol = 'H_' + str(i+1), 'V_' + str(i+1), 'M_' + str(i+1)
+            u_symbol, v_symbol, o_symbol = 'u_' + str(i+1), 'v_' + str(i+1), 'o_' + str(i+1)
             
-            self.symbols.extend([H_symbol, V_symbol, u_symbol, v_symbol])
+            self.symbols.extend([H_symbol, V_symbol, M_symbol, u_symbol, v_symbol, o_symbol])
             
-            is_fixed_x, is_fixed_y = node.getFixedState()
+            support_type = node.getSupportType()
+            prescripted_displacements = node.getPrescribedDisplacements()
             
-            reaction_vector[2*i] = H_symbol if is_fixed_x else 0
-            displacement_vector[2*i] = 0 if is_fixed_x else u_symbol
-            reaction_vector[2*i + 1] = V_symbol if is_fixed_y else 0
-            displacement_vector[2*i + 1] = 0 if is_fixed_y else v_symbol
+        if support_type == 'horizontal_roller':
+            reaction_vector[self.dof_per_node * i + 1] = V_symbol  # Vertical reaction
+            displacement_vector[self.dof_per_node * i] = u_symbol  # Free horizontal displacement
+
+        elif support_type == 'vertical_roller':
+            reaction_vector[self.dof_per_node * i] = H_symbol  # Horizontal reaction
+            displacement_vector[self.dof_per_node * i + 1] = v_symbol  # Free vertical displacement
+
+        elif support_type == 'double_roller':
+            # No reactions since it's free in both directions
+            displacement_vector[self.dof_per_node * i] = u_symbol  # Free horizontal displacement
+            displacement_vector[self.dof_per_node * i + 1] = v_symbol  # Free vertical displacement
+
+        elif support_type == 'pinned':
+            reaction_vector[self.dof_per_node * i] = H_symbol  # Horizontal reaction
+            reaction_vector[self.dof_per_node * i + 1] = V_symbol  # Vertical reaction
+            # No displacement in either direction
+
+        elif support_type == 'fixed':
+            reaction_vector[self.dof_per_node * i] = H_symbol  # Horizontal reaction
+            reaction_vector[self.dof_per_node * i + 1] = V_symbol  # Vertical reaction
+            reaction_vector[self.dof_per_node * i + 2] = M_symbol  # Moment reaction
+            # No displacement or rotation
+
+        elif support_type == 'free':
+            displacement_vector[self.dof_per_node * i] = u_symbol  # Free horizontal displacement
+            displacement_vector[self.dof_per_node * i + 1] = v_symbol  # Free vertical displacement
+            displacement_vector[self.dof_per_node * i + 2] = o_symbol  # Free rotation
+
                          
         self.symbols = sp.symbols(self.symbols) 
             
@@ -163,7 +187,6 @@ class Structure:
         """
         for node in self.nodes:
             node.updatePosition()
-
     
     def setBarsStressesAndNormals(self):
         """
@@ -184,46 +207,3 @@ class Structure:
             values.append(bar.getBarStress())
         infos = dict(zip(keys, values))
         return infos
-
-    def plotStructure(self, displacement_scale = 1.0):
-        """
-        Plots the initial and final configurations of the structure.
-        
-        :param displacement_scale: Scale factor for displacements, default is 1.0.
-        """
-        _, ax = plt.subplots()
-        
-        initial_x = [position[0] for position in self.nodes_initial_positions]
-        initial_y = [position[1] for position in self.nodes_initial_positions]
-        ax.plot(initial_x, initial_y, 'ko', label='Initial')
-
-        for bar in self.bars:
-            left_initial_pos = bar.left_node.getPosition()
-            right_initial_pos = bar.right_node.getPosition()
-            ax.plot([left_initial_pos[0], right_initial_pos[0]], [left_initial_pos[1], right_initial_pos[1]], 'k-')
-
-        for bar in self.bars:
-            left_initial_pos = bar.left_node.getPosition()
-            right_initial_pos = bar.right_node.getPosition()
-            left_final_pos = None
-            right_final_pos = None
-            for idx, pos in enumerate(self.nodes_final_positions):
-                if np.array_equal(pos, left_initial_pos):
-                    left_final_pos = pos + displacement_scale * bar.left_node.getDisplacement()
-                if np.array_equal(pos, right_initial_pos):
-                    right_final_pos = pos + displacement_scale * bar.right_node.getDisplacement()
-                if left_final_pos is not None and right_final_pos is not None:
-                    break
-            ax.plot([left_final_pos[0], right_final_pos[0]], [left_final_pos[1], right_final_pos[1]], 'r--')
-        
-        final_x = [position[0] + displacement_scale * node.getDisplacement()[0] for position, node in zip(self.nodes_final_positions, self.nodes)]
-        final_y = [position[1] + displacement_scale * node.getDisplacement()[1] for position, node in zip(self.nodes_final_positions, self.nodes)]
-        ax.plot(final_x, final_y, 'ro', label='Final')
-
-        ax.legend()
-        ax.set_aspect('equal', 'box')
-        plt.xlabel('X (m)')
-        plt.ylabel('Y (m)')
-        plt.title(f'Structure  (Displacement Factor: {displacement_scale})')
-        plt.grid(True)
-        plt.show()

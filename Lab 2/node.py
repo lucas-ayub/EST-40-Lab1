@@ -9,14 +9,15 @@ class Node:
         :type x: float
         :param y: The y-coordinate of the node.
         :type y: float
-        :param support_type: Indicates the support type.
+        :param support_type: Indicates the support type:
+        horizontal_roller, vertical_roller, double_roller, pinned, fixed, or free.
         :type support_type: str
         :param prescribed_displacement_x: The prescribed displacement in x of the node.
-        :type prescribed_displacement_x: float
+        :type prescribed_displacement_x: float or None
         :param prescribed_displacement_y: The prescribed displacement in y of the node.
-        :type prescribed_displacement_y: float
+        :type prescribed_displacement_y: float or None
         :param prescribed_rotation: The prescribed rotation of the node.
-        :type prescribed_rotation: float
+        :type prescribed_rotation: float or None
         :param global_f_x: The horizontal external force applied to the node.
         :type global_f_x: float
         :param local_f_x: The horizontal external force applied to the node in local coordinates.
@@ -34,7 +35,7 @@ class Node:
         self.global_forces = np.array([global_f_x, global_f_y], dtype=np.float64)
         self.local_forces = np.array([local_f_x, local_f_y], dtype=np.float64)
         self.momentum = external_momentum
-        self.prescribed_displacement = [prescribed_displacement_x, prescribed_displacement_y]
+        self.prescribed_displacements = [prescribed_displacement_x, prescribed_displacement_y, prescribed_rotation]
         self.prescribed_rotation = prescribed_rotation        
         
     def updatePosition(self):
@@ -72,5 +73,22 @@ class Node:
         :rtype: numpy.ndarray
         """
         return self.displacement
+    
+    def getSupportType(self):
+        """
+        Gets the support type of the node.
         
+        :return: The support type of the node.
+        :rtype: str
+        """
+        return self.support
+        
+    def getPrescriptedDisplacements(self):
+        """
+        Gets the prescribed displacements of the node.
+        
+        :return: The prescribed displacements of the node.
+        :rtype: list
+        """
+        return self.prescribed_displacements
         
