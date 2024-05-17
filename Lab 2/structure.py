@@ -95,36 +95,38 @@ class Structure:
             self.symbols.extend([H_symbol, V_symbol, M_symbol, u_symbol, v_symbol, o_symbol])
             
             support_type = node.getSupportType()
+            
+            if support_type == 'horizontal_roller':
+                reaction_vector[self.dof_per_node * i + 1] = V_symbol  
+
+            elif support_type == 'vertical_roller':
+                reaction_vector[self.dof_per_node * i] = H_symbol  
+
+            elif support_type == 'pinned' or support_type == 'double_roller':
+                reaction_vector[self.dof_per_node * i] = H_symbol  
+                reaction_vector[self.dof_per_node * i + 1] = V_symbol  
+
+            elif support_type == 'fixed':
+                reaction_vector[self.dof_per_node * i] = H_symbol  
+                reaction_vector[self.dof_per_node * i + 1] = V_symbol  
+                reaction_vector[self.dof_per_node * i + 2] = M_symbol  
+
             prescripted_displacements = node.getPrescribedDisplacements()
             
-        if support_type == 'horizontal_roller':
-            reaction_vector[self.dof_per_node * i + 1] = V_symbol  # Vertical reaction
-            displacement_vector[self.dof_per_node * i] = u_symbol  # Free horizontal displacement
-
-        elif support_type == 'vertical_roller':
-            reaction_vector[self.dof_per_node * i] = H_symbol  # Horizontal reaction
-            displacement_vector[self.dof_per_node * i + 1] = v_symbol  # Free vertical displacement
-
-        elif support_type == 'double_roller':
-            # No reactions since it's free in both directions
-            displacement_vector[self.dof_per_node * i] = u_symbol  # Free horizontal displacement
-            displacement_vector[self.dof_per_node * i + 1] = v_symbol  # Free vertical displacement
-
-        elif support_type == 'pinned':
-            reaction_vector[self.dof_per_node * i] = H_symbol  # Horizontal reaction
-            reaction_vector[self.dof_per_node * i + 1] = V_symbol  # Vertical reaction
-            # No displacement in either direction
-
-        elif support_type == 'fixed':
-            reaction_vector[self.dof_per_node * i] = H_symbol  # Horizontal reaction
-            reaction_vector[self.dof_per_node * i + 1] = V_symbol  # Vertical reaction
-            reaction_vector[self.dof_per_node * i + 2] = M_symbol  # Moment reaction
-            # No displacement or rotation
-
-        elif support_type == 'free':
-            displacement_vector[self.dof_per_node * i] = u_symbol  # Free horizontal displacement
-            displacement_vector[self.dof_per_node * i + 1] = v_symbol  # Free vertical displacement
-            displacement_vector[self.dof_per_node * i + 2] = o_symbol  # Free rotation
+            if prescripted_displacements[0] is not None:
+                displacement_vector[self.dof_per_node * i] = prescripted_displacements[0]
+            else:
+                displacement_vector[self.dof_per_node * i] = u_symbol  
+   
+            if prescripted_displacements[1] is not None:
+                displacement_vector[self.dof_per_node * i + 1] = prescripted_displacements[1]        
+            else:
+                displacement_vector[self.dof_per_node * i + 1] = v_symbol
+                
+            if prescripted_displacements[2] is not None:
+                displacement_vector[self.dof_per_node * i + 2] = prescripted_displacements[2]
+            else:
+                displacement_vector[self.dof_per_node * i + 2] = o_symbol
 
                          
         self.symbols = sp.symbols(self.symbols) 

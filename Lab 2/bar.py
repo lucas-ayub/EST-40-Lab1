@@ -74,7 +74,7 @@ def discretizateBar(left_node, right_node, q, E, A, n_elements):
     return bars, nodes
 
 class Bar:
-    def __init__(self, left_node, right_node, E, A, I, global_q_x, local_q_x, global_q_y, local_q_y):
+    def __init__(self, left_node, right_node, E, A, I, global_q_x=0, local_q_x=0, global_q_y=0, local_q_y=0):
         """
         Initializes a Bar object.
 
@@ -106,8 +106,10 @@ class Bar:
         self.Li = self.calculateBarLength()
         self.angle = self.getBarAngle()
         self.stiffness_matrix = self.calculateStiffnessMatrix()
-        self.global_loads = [global_q_x, global_q_y]
-        self.local_loads = [local_q_x, local_q_y]
+        self.global_loads = [lambda x: global_q_x if isinstance(global_q_x, (int, float)) else global_q_x,
+                             lambda y: global_q_y if isinstance(global_q_y, (int, float)) else global_q_y]
+        self.local_loads = [lambda x: local_q_x if isinstance(local_q_x, (int, float)) else local_q_x,
+                            lambda y: local_q_y if isinstance(local_q_y, (int, float)) else local_q_y]
         self.rotation_matrix_6x6, self.rotation_matrix_3x3 = self.calculateRotationMatrix()
         self.force_vector = self.calculateForceVector()
         self.N = 0
@@ -235,11 +237,11 @@ class Bar:
         phi_5 = lambda x: 1 - x / self.L
         phi_6 = lambda x: x / self.L
 
-        decomposed_q_x = lambda x: self.global_q_x(x) * c - self.global_q_y(x) * s
-        decomposed_q_y = lambda x: self.global_q_x(x) * s + self.global_q_y(x) * c
+        decomposed_q_x = lambda x: self.global_loads[0](x) * c - self.global_loads[1](x) * s
+        decomposed_q_y = lambda x: self.global_loads[0](x) * s + self.global_loads[1](x) * c
 
-        total_q_x = lambda x: self.local_q_x(x) + decomposed_q_x(x)
-        total_q_y = lambda x: self.local_q_y(x) + decomposed_q_y(x)
+        total_q_x = lambda x: self.local_loads[0](x) + decomposed_q_x(x)
+        total_q_y = lambda x: self.local_loads[1](x) + decomposed_q_y(x)
 
         self.force_vector[0] = quad(lambda x: total_q_x(x) * phi_5(x), 0, self.L)[0]
         self.force_vector[1] = quad(lambda x: total_q_y(x) * phi_1(x), 0, self.L)[0]

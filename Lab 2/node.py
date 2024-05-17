@@ -1,8 +1,8 @@
 import numpy as np
 
 class Node:
-    def __init__(self, x, y, support_type, prescribed_displacement_x, prescribed_displacement_y, prescribed_rotation, 
-    global_f_x=0, local_f_x=0, global_f_y=0, local_f_y=0, external_momentum=0):
+    def __init__(self, x, y, support_type, prescribed_displacement_x=None, prescribed_displacement_y=None, prescribed_rotation=None, 
+                 global_f_x=0, local_f_x=0, global_f_y=0, local_f_y=0, external_momentum=0):
         """
         Initializes a Node object.
         :param x: The x-coordinate of the node.
@@ -30,13 +30,12 @@ class Node:
         :type external_momentum: float
         """
         self.position = np.array([x, y], dtype=np.float64)
-        self.displacement = np.array([0, 0], dtype=np.float64)
+        self.displacement = np.array([0, 0, 0], dtype=np.float64)  
         self.support = support_type
         self.global_forces = np.array([global_f_x, global_f_y], dtype=np.float64)
         self.local_forces = np.array([local_f_x, local_f_y], dtype=np.float64)
         self.momentum = external_momentum
         self.prescribed_displacements = [prescribed_displacement_x, prescribed_displacement_y, prescribed_rotation]
-        self.prescribed_rotation = prescribed_rotation        
         
     def updatePosition(self):
         """
@@ -54,7 +53,7 @@ class Node:
         """    
         return self.position
         
-    def setDisplacement(self, delta_x, delta_y):
+    def setDisplacement(self, delta_x, delta_y, delta_theta):
         """
         Sets the displacement of the node.
 
@@ -63,7 +62,7 @@ class Node:
         :param delta_y: The vertical displacement of the node.
         :type delta_y: float
         """
-        self.displacement = np.array([delta_x, delta_y])
+        self.displacement = np.array([delta_x, delta_y, delta_theta])
         
     def getDisplacement(self):
         """
