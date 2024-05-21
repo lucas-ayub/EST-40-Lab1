@@ -106,10 +106,14 @@ class Bar:
         self.Li = self.calculateBarLength()
         self.angle = self.getBarAngle()
         self.stiffness_matrix = self.calculateStiffnessMatrix()
-        self.global_loads = [lambda x: global_q_x if isinstance(global_q_x, (int, float)) else global_q_x,
-                             lambda y: global_q_y if isinstance(global_q_y, (int, float)) else global_q_y]
-        self.local_loads = [lambda x: local_q_x if isinstance(local_q_x, (int, float)) else local_q_x,
-                            lambda y: local_q_y if isinstance(local_q_y, (int, float)) else local_q_y]
+        self.global_loads = [
+            (lambda x, val=global_q_x: val if isinstance(global_q_x, (int, float)) else global_q_x(x)),
+            (lambda y, val=global_q_y: val if isinstance(global_q_y, (int, float)) else global_q_y(y))
+        ]
+        self.local_loads = [
+            (lambda x, val=local_q_x: val if isinstance(local_q_x, (int, float)) else local_q_x(x)),
+            (lambda y, val=local_q_y: val if isinstance(local_q_y, (int, float)) else local_q_y(y))
+        ]
         self.rotation_matrix_6x6, self.rotation_matrix_3x3 = self.calculateRotationMatrix()
         self.force_vector = self.calculateForceVector()
         self.N = 0
@@ -180,41 +184,41 @@ class Bar:
 
         return R_6, R_3
     
-    def getNodesGlobalForces(self):
-        """
-        Transforms the local forces to global reference.
+    # def getNodesGlobalForces(self):
+    #     """
+    #     Transforms the local forces to global reference.
 
-        :return: A tuple containing the global forces acting on the left and right nodes.
-        :rtype: tuple(numpy.ndarray, numpy.ndarray)
-        """
+    #     :return: A tuple containing the global forces acting on the left and right nodes.
+    #     :rtype: tuple(numpy.ndarray, numpy.ndarray)
+    #     """
         
-        left_node_forces_local = np.array([
-            [self.left_node.local_forces[0]],
-            [self.left_node.local_forces[1]],
-            [self.left_node.momentum]
-        ])
-        left_node_forces_global = np.array([
-            [self.left_node.global_forces[0]],
-            [self.left_node.global_forces[1]],
-            [0]
-        ])
+    #     left_node_forces_local = np.array([
+    #         [self.left_node.local_forces[0]],
+    #         [self.left_node.local_forces[1]],
+    #         [self.left_node.momentum]
+    #     ])
+    #     left_node_forces_global = np.array([
+    #         [self.left_node.global_forces[0]],
+    #         [self.left_node.global_forces[1]],
+    #         [0]
+    #     ])
 
-        right_node_forces_local = np.array([
-            [self.right_node.local_forces[0]],
-            [self.right_node.local_forces[1]],
-            [self.right_node.momentum]
-        ])
-        right_node_forces_global = np.array([
-            [self.right_node.global_forces[0]],
-            [self.right_node.global_forces[1]],
-            [0]
-        ])
+    #     right_node_forces_local = np.array([
+    #         [self.right_node.local_forces[0]],
+    #         [self.right_node.local_forces[1]],
+    #         [self.right_node.momentum]
+    #     ])
+    #     right_node_forces_global = np.array([
+    #         [self.right_node.global_forces[0]],
+    #         [self.right_node.global_forces[1]],
+    #         [0]
+    #     ])
 
-        left_node_forces_total_global = rotateTensor(self.rotation_matrix_3x3, left_node_forces_local) + left_node_forces_global
-        right_node_forces_total_global = rotateTensor(self.rotation_matrix_3x3, right_node_forces_local) + right_node_forces_global
+    #     left_node_forces_total_global = rotateTensor(self.rotation_matrix_3x3, left_node_forces_local) + left_node_forces_global
+    #     right_node_forces_total_global = rotateTensor(self.rotation_matrix_3x3, right_node_forces_local) + right_node_forces_global
         
 
-        return left_node_forces_total_global, right_node_forces_total_global
+    #     return left_node_forces_total_global, right_node_forces_total_global
 
     
     def calculateForceVector(self):
@@ -231,7 +235,7 @@ class Bar:
         phi_1 = lambda x: 2 * (x**3) / self.L**3 - 3 * (x**2) / self.L**2 + 1
         phi_2 = lambda x: x - 2 * (x**2) / self.L + (x**3) / self.L**2
         phi_3 = lambda x: -2 * (x**3) / self.L**3 + 3 * (x**2) / self.L**2
-        phi_4 = lambda x: -(x**3) / self.L**2 + (x**2) / self.L
+        phi_4 = lambda x: (x**3) / self.L**2 - (x**2) / self.L
         
         
         phi_5 = lambda x: 1 - x / self.L
@@ -239,24 +243,20 @@ class Bar:
 
         decomposed_q_x = lambda x: self.global_loads[0](x) * c - self.global_loads[1](x) * s
         decomposed_q_y = lambda x: self.global_loads[0](x) * s + self.global_loads[1](x) * c
-
         total_q_x = lambda x: self.local_loads[0](x) + decomposed_q_x(x)
         total_q_y = lambda x: self.local_loads[1](x) + decomposed_q_y(x)
 
-        self.force_vector[0] = quad(lambda x: total_q_x(x) * phi_5(x), 0, self.L)[0]
-        self.force_vector[1] = quad(lambda x: total_q_y(x) * phi_1(x), 0, self.L)[0]
-        self.force_vector[2] = quad(lambda x: total_q_y(x) * phi_2(x), 0, self.L)[0]
-        self.force_vector[3] = quad(lambda x: total_q_x(x) * phi_6(x), 0, self.L)[0]
-        self.force_vector[4] = quad(lambda x: total_q_y(x) * phi_3(x), 0, self.L)[0]
-        self.force_vector[5] = quad(lambda x: total_q_y(x) * phi_4(x), 0, self.L)[0]
+        force_vector[0] = quad(lambda x: total_q_x(x) * phi_5(x), 0, self.L)[0]
+        force_vector[1] = quad(lambda x: total_q_y(x) * phi_1(x), 0, self.L)[0]
+        force_vector[2] = quad(lambda x: total_q_y(x) * phi_2(x), 0, self.L)[0]
+        force_vector[3] = quad(lambda x: total_q_x(x) * phi_6(x), 0, self.L)[0]
+        force_vector[4] = quad(lambda x: total_q_y(x) * phi_3(x), 0, self.L)[0]
+        force_vector[5] = quad(lambda x: total_q_y(x) * phi_4(x), 0, self.L)[0]
 
-        rotated_force_vector = rotateTensor(self.rotation_matrix_6x6, force_vector)
-        left_node_forces_total_global, right_node_forces_total_global = self.getNodesGlobalForces() 
-        concatenated_node_forces = np.concatenate(left_node_forces_total_global, right_node_forces_total_global)
-        
-        global_force_vector = rotated_force_vector + concatenated_node_forces
-        
+        global_force_vector = rotateTensor(self.rotation_matrix_6x6, force_vector)
+
         return global_force_vector
+
     
     def getForceVector(self):
         """

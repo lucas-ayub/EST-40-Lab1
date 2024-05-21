@@ -2,7 +2,7 @@ import numpy as np
 
 class Node:
     def __init__(self, x, y, support_type, prescribed_displacement_x=None, prescribed_displacement_y=None, prescribed_rotation=None, 
-                 global_f_x=0, local_f_x=0, global_f_y=0, local_f_y=0, external_momentum=0):
+                 global_f_x=0, global_f_y=0, external_momentum=0):
         """
         Initializes a Node object.
         :param x: The x-coordinate of the node.
@@ -20,21 +20,15 @@ class Node:
         :type prescribed_rotation: float or None
         :param global_f_x: The horizontal external force applied to the node.
         :type global_f_x: float
-        :param local_f_x: The horizontal external force applied to the node in local coordinates.
-        :type local_f_x: float
         :param global_f_y: The vertical external force applied to the node.
         :type global_f_y: float
-        :param local_f_y: The vertical external force applied to the node in local coordinates.
-        :type local_f_y: float
         :param external_momentum: The external momentum applied to the node
         :type external_momentum: float
         """
         self.position = np.array([x, y], dtype=np.float64)
         self.displacement = np.array([0, 0, 0], dtype=np.float64)  
         self.support = support_type
-        self.global_forces = np.array([global_f_x, global_f_y], dtype=np.float64)
-        self.local_forces = np.array([local_f_x, local_f_y], dtype=np.float64)
-        self.momentum = external_momentum
+        self.global_forces = np.array([global_f_x, global_f_y, external_momentum], dtype=np.float64)
         self.prescribed_displacements = [prescribed_displacement_x, prescribed_displacement_y, prescribed_rotation]
         
     def updatePosition(self):
@@ -73,6 +67,24 @@ class Node:
         """
         return self.displacement
     
+    def setFinalForces(self, f_x, f_y, momentum):
+        """
+        Sets the final forces acting on the node.
+        
+        :return: The final forces acting on the node.
+        :rtype: numpy.ndarray
+        """
+        self.global_forces = np.array([f_x, f_y, momentum])
+        
+    def getGlobalForces(self):
+        """
+        Gets the forces acting on the node.
+        
+        :return: The forces acting on the node.
+        :rtype: numpy.ndarray
+        """
+        return self.global_forces
+    
     def getSupportType(self):
         """
         Gets the support type of the node.
@@ -90,4 +102,7 @@ class Node:
         :rtype: list
         """
         return self.prescribed_displacements
+
+
+        
         

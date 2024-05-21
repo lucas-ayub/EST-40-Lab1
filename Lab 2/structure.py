@@ -24,12 +24,9 @@ class Structure:
         self.f = self.calculateForceVector()
         self.symbols = []
         self.r, self.u = self.calculateReactionAndDisplacementVectors()
+        self.f_star = sp.Matrix(self.f) + self.r
         self.solution = self.calculateSolution()
-        self.nodes_initial_positions = [node.getPosition() for node in self.nodes]
-        self.setNodesDisplacementsAndForces()
-        self.updateNodesPositions()
-        self.nodes_final_positions = [node.getPosition() for node in self.nodes]
-        self.setBarsStressesAndNormals()
+
 
 
     def calculateStiffnessMatrix(self):
@@ -42,10 +39,12 @@ class Structure:
         global_size = self.num_nodes * self.dof_per_node
         global_matrix = np.zeros((global_size, global_size))
 
-        for i, bar_matrix in enumerate(self.bars):
+        for i, bar in enumerate(self.bars):
+            bar_matrix = bar.getStiffnessMatrix()
             start_index = i * self.dof_per_node
             end_index = start_index + 2 * self.dof_per_node
             global_matrix[start_index:end_index, start_index:end_index] += bar_matrix
+            
 
         return global_matrix
 
@@ -75,8 +74,17 @@ class Structure:
             
             force_vector[left_node_index:left_node_index+self.dof_per_node] += bar_global_force_vector[:self.dof_per_node]
             force_vector[right_node_index:right_node_index+self.dof_per_node] += bar_global_force_vector[self.dof_per_node:]
+            
+        global_concentrated_forces = np.zeros(self.dof_per_node * len(self.nodes))
 
-        return force_vector
+        for index, node in enumerate(self.nodes):
+            node_global_concentrated_forces = node.getGlobalForces()
+            i = index * 3
+            global_concentrated_forces[i:i+3] = node_global_concentrated_forces
+
+        total_force_vector = force_vector + global_concentrated_forces
+        
+        return total_force_vector
             
     def calculateReactionAndDisplacementVectors(self):
         """
@@ -89,29 +97,34 @@ class Structure:
         displacement_vector = sp.zeros(self.dof_per_node*self.num_nodes, 1)
         
         for i, node in enumerate(self.nodes):
-            H_symbol, V_symbol, M_symbol = 'H_' + str(i+1), 'V_' + str(i+1), 'M_' + str(i+1)
-            u_symbol, v_symbol, o_symbol = 'u_' + str(i+1), 'v_' + str(i+1), 'o_' + str(i+1)
+            index = i * self.dof_per_node
+            N_symbol, V_symbol, M_symbol = 'N_' + str(index+1), 'V_' + str(index+2), 'M_' + str(index+3)
+            u_symbol, v_symbol, theta_symbol = 'u_' + str(index+1), 'v_' + str(index+2), 'theta_' + str(index+3)
             
-            self.symbols.extend([H_symbol, V_symbol, M_symbol, u_symbol, v_symbol, o_symbol])
+            self.symbols.extend([N_symbol, V_symbol, M_symbol, u_symbol, v_symbol, theta_symbol])
             
             support_type = node.getSupportType()
             
             if support_type == 'horizontal_roller':
                 reaction_vector[self.dof_per_node * i + 1] = V_symbol  
+                self.symbols.extend([V_symbol])
 
             elif support_type == 'vertical_roller':
-                reaction_vector[self.dof_per_node * i] = H_symbol  
+                reaction_vector[self.dof_per_node * i] = N_symbol  
+                self.symbols.extend([N_symbol])
 
             elif support_type == 'pinned' or support_type == 'double_roller':
-                reaction_vector[self.dof_per_node * i] = H_symbol  
+                reaction_vector[self.dof_per_node * i] = N_symbol  
                 reaction_vector[self.dof_per_node * i + 1] = V_symbol  
+                self.symbols.extend([N_symbol, V_symbol])
 
             elif support_type == 'fixed':
-                reaction_vector[self.dof_per_node * i] = H_symbol  
+                reaction_vector[self.dof_per_node * i] = N_symbol  
                 reaction_vector[self.dof_per_node * i + 1] = V_symbol  
-                reaction_vector[self.dof_per_node * i + 2] = M_symbol  
+                reaction_vector[self.dof_per_node * i + 2] = M_symbol 
+                self.symbols.extend([N_symbol, V_symbol, M_symbol])
 
-            prescripted_displacements = node.getPrescribedDisplacements()
+            prescripted_displacements = node.getPrescriptedDisplacements()
             
             if prescripted_displacements[0] is not None:
                 displacement_vector[self.dof_per_node * i] = prescripted_displacements[0]
@@ -126,7 +139,7 @@ class Structure:
             if prescripted_displacements[2] is not None:
                 displacement_vector[self.dof_per_node * i + 2] = prescripted_displacements[2]
             else:
-                displacement_vector[self.dof_per_node * i + 2] = o_symbol
+                displacement_vector[self.dof_per_node * i + 2] = theta_symbol
 
                          
         self.symbols = sp.symbols(self.symbols) 
@@ -140,7 +153,7 @@ class Structure:
         :return: Symply dict with the variables and their values
         :rtype: dict
         """
-        f = sp.Matrix(self.f) + self.r
+        f = sp.Matrix(self.f_star)
         K = sp.Matrix(self.K)
         u = sp.Matrix(self.u)
         variables = sp.solve(K*u - f, self.symbols)

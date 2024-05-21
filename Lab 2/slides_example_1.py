@@ -16,3 +16,12 @@ bar_2 = Bar(left_node=node_2, right_node=node_3, E=25e9, A=0.036, I=2.7e-4, loca
 bars = [bar_1, bar_2]
 
 structure = Structure(list_of_nodes=nodes, list_of_bars=bars)
+
+for bar in bars:
+    print(bar.getForceVector())
+    print('\n\n')
+
+print(structure.calculateForceVector() / 1e3)
+print(structure.f_star / 1e3 )
+print(structure.u)
+# print(structure.solution)
