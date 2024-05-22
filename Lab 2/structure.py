@@ -27,8 +27,6 @@ class Structure:
         self.f_star = sp.Matrix(self.f) + self.r
         self.solution = self.calculateSolution()
 
-
-
     def calculateStiffnessMatrix(self):
         """
         Calculates the global stiffness matrix of the system.
@@ -45,7 +43,6 @@ class Structure:
             end_index = start_index + 2 * self.dof_per_node
             global_matrix[start_index:end_index, start_index:end_index] += bar_matrix
             
-
         return global_matrix
 
     def getStiffnessMatrix(self):
@@ -104,6 +101,7 @@ class Structure:
             self.symbols.extend([N_symbol, V_symbol, M_symbol, u_symbol, v_symbol, theta_symbol])
             
             support_type = node.getSupportType()
+            prescripted_displacements = node.getPrescriptedDisplacements()
             
             if support_type == 'horizontal_roller':
                 reaction_vector[self.dof_per_node * i + 1] = V_symbol  
@@ -113,7 +111,12 @@ class Structure:
                 reaction_vector[self.dof_per_node * i] = N_symbol  
                 self.symbols.extend([N_symbol])
 
-            elif support_type == 'pinned' or support_type == 'double_roller':
+            elif support_type == 'double_roller':
+                reaction_vector[self.dof_per_node * i] = N_symbol  
+                reaction_vector[self.dof_per_node * i + 1] = V_symbol  
+                self.symbols.extend([N_symbol, V_symbol])
+
+            elif support_type == 'pinned':
                 reaction_vector[self.dof_per_node * i] = N_symbol  
                 reaction_vector[self.dof_per_node * i + 1] = V_symbol  
                 self.symbols.extend([N_symbol, V_symbol])
@@ -124,22 +127,24 @@ class Structure:
                 reaction_vector[self.dof_per_node * i + 2] = M_symbol 
                 self.symbols.extend([N_symbol, V_symbol, M_symbol])
 
-            prescripted_displacements = node.getPrescriptedDisplacements()
             
             if prescripted_displacements[0] is not None:
                 displacement_vector[self.dof_per_node * i] = prescripted_displacements[0]
             else:
                 displacement_vector[self.dof_per_node * i] = u_symbol  
+                self.symbols.append(u_symbol)
    
             if prescripted_displacements[1] is not None:
                 displacement_vector[self.dof_per_node * i + 1] = prescripted_displacements[1]        
             else:
                 displacement_vector[self.dof_per_node * i + 1] = v_symbol
+                self.symbols.append(v_symbol)
                 
             if prescripted_displacements[2] is not None:
                 displacement_vector[self.dof_per_node * i + 2] = prescripted_displacements[2]
             else:
                 displacement_vector[self.dof_per_node * i + 2] = theta_symbol
+                self.symbols.append(theta_symbol)
 
                          
         self.symbols = sp.symbols(self.symbols) 

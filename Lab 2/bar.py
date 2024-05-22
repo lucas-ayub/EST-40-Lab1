@@ -105,6 +105,7 @@ class Bar:
         self.L = self.calculateBarLength()
         self.Li = self.calculateBarLength()
         self.angle = self.getBarAngle()
+        self.rotation_matrix_6x6, self.rotation_matrix_3x3 = self.calculateRotationMatrix()
         self.stiffness_matrix = self.calculateStiffnessMatrix()
         self.global_loads = [
             (lambda x, val=global_q_x: val if isinstance(global_q_x, (int, float)) else global_q_x(x)),
@@ -114,7 +115,6 @@ class Bar:
             (lambda x, val=local_q_x: val if isinstance(local_q_x, (int, float)) else local_q_x(x)),
             (lambda y, val=local_q_y: val if isinstance(local_q_y, (int, float)) else local_q_y(y))
         ]
-        self.rotation_matrix_6x6, self.rotation_matrix_3x3 = self.calculateRotationMatrix()
         self.force_vector = self.calculateForceVector()
         self.N = 0
         self.sigma = 0
@@ -232,26 +232,25 @@ class Bar:
         c = np.cos(self.angle)
         s = np.sin(self.angle)
         
-        phi_1 = lambda x: 2 * (x**3) / self.L**3 - 3 * (x**2) / self.L**2 + 1
-        phi_2 = lambda x: x - 2 * (x**2) / self.L + (x**3) / self.L**2
-        phi_3 = lambda x: -2 * (x**3) / self.L**3 + 3 * (x**2) / self.L**2
-        phi_4 = lambda x: (x**3) / self.L**2 - (x**2) / self.L
+        phi_1 = lambda x: x / self.L
+        phi_2 = lambda x: 2 * (x**3) / self.L**3 - 3 * (x**2) / self.L**2 + 1
+        phi_3 = lambda x: (x**3) / (self.L**2) - 2 * (x**2) / (self.L) + x
         
+        phi_4 = lambda x: 1 - x / self.L
+        phi_5 = lambda x: -2 * (x**3) / self.L**3 + 3 * (x**2) / self.L**2
+        phi_6 = lambda x: (x**3) / self.L**2 - (x**2) / self.L
         
-        phi_5 = lambda x: 1 - x / self.L
-        phi_6 = lambda x: x / self.L
-
         decomposed_q_x = lambda x: self.global_loads[0](x) * c - self.global_loads[1](x) * s
         decomposed_q_y = lambda x: self.global_loads[0](x) * s + self.global_loads[1](x) * c
         total_q_x = lambda x: self.local_loads[0](x) + decomposed_q_x(x)
         total_q_y = lambda x: self.local_loads[1](x) + decomposed_q_y(x)
 
-        force_vector[0] = quad(lambda x: total_q_x(x) * phi_5(x), 0, self.L)[0]
-        force_vector[1] = quad(lambda x: total_q_y(x) * phi_1(x), 0, self.L)[0]
-        force_vector[2] = quad(lambda x: total_q_y(x) * phi_2(x), 0, self.L)[0]
-        force_vector[3] = quad(lambda x: total_q_x(x) * phi_6(x), 0, self.L)[0]
-        force_vector[4] = quad(lambda x: total_q_y(x) * phi_3(x), 0, self.L)[0]
-        force_vector[5] = quad(lambda x: total_q_y(x) * phi_4(x), 0, self.L)[0]
+        force_vector[0] = quad(lambda x: total_q_x(x) * phi_1(x), 0, self.L)[0]
+        force_vector[1] = quad(lambda x: total_q_y(x) * phi_2(x), 0, self.L)[0]
+        force_vector[2] = quad(lambda x: total_q_y(x) * phi_3(x), 0, self.L)[0]
+        force_vector[3] = quad(lambda x: total_q_x(x) * phi_4(x), 0, self.L)[0]
+        force_vector[4] = quad(lambda x: total_q_y(x) * phi_5(x), 0, self.L)[0]
+        force_vector[5] = quad(lambda x: total_q_y(x) * phi_6(x), 0, self.L)[0]
 
         global_force_vector = rotateTensor(self.rotation_matrix_6x6, force_vector)
 
@@ -276,9 +275,10 @@ class Bar:
         """
         c = np.cos(self.angle)
         s = np.sin(self.angle)
-        mu = self.A * self.L**2 / 2 * self.I
+        mu = self.A * self.L**2 / (2 * self.I)
         k = 2 * self.E * self.I / self.L**3
         L = self.L
+        
         K = k * np.array([
             [mu * c**2 + 6 * s**2, (mu - 6) * c * s, -3 * L * s, -mu * c**2 - 6 * s**2, -(mu - 6) * c * s, -3 * L * s],
             [(mu - 6) * c * s, mu * s**2 + 6 * c**2, 3 * L * c, -(mu - 6) * c * s, -mu * s**2 - 6 * c**2, 3 * L * c],
@@ -289,7 +289,7 @@ class Bar:
         ])
         
         return K
-    
+        
     def getStiffnessMatrix(self):
         """
         Gets the stiffness matrix of the bar.

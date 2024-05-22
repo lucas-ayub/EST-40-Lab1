@@ -17,11 +17,12 @@ bars = [bar_1, bar_2]
 
 structure = Structure(list_of_nodes=nodes, list_of_bars=bars)
 
-for bar in bars:
-    print(bar.getForceVector())
-    print('\n\n')
+# for bar in bars:
+#     print(bar.stiffness_matrix)
+#     print('\n\n')
 
-print(structure.calculateForceVector() / 1e3)
+
+print(structure.K / 1e3 )
+# print(structure.f / 1e3)
 print(structure.f_star / 1e3 )
-print(structure.u)
-# print(structure.solution)
+# print(structure.u)
