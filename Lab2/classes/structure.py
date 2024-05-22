@@ -1,10 +1,7 @@
-from node import *
-from bar import *
-
 import numpy as np
 import sympy as sp
-import matplotlib.pyplot as plt
-
+from node import Node
+from bar import Bar
 
 class Structure:
     def __init__(self, list_of_nodes, list_of_bars):
@@ -37,11 +34,16 @@ class Structure:
         global_size = self.num_nodes * self.dof_per_node
         global_matrix = np.zeros((global_size, global_size))
 
-        for i, bar in enumerate(self.bars):
+        for bar in self.bars:
             bar_matrix = bar.getStiffnessMatrix()
-            start_index = i * self.dof_per_node
-            end_index = start_index + 2 * self.dof_per_node
-            global_matrix[start_index:end_index, start_index:end_index] += bar_matrix
+            
+            left_node_index = bar.left_node.index * self.dof_per_node
+            right_node_index = bar.right_node.index * self.dof_per_node
+            
+            global_matrix[left_node_index:left_node_index+self.dof_per_node, left_node_index:left_node_index+self.dof_per_node] += bar_matrix[:self.dof_per_node, :self.dof_per_node]
+            global_matrix[left_node_index:left_node_index+self.dof_per_node, right_node_index:right_node_index+self.dof_per_node] += bar_matrix[:self.dof_per_node, self.dof_per_node:]
+            global_matrix[right_node_index:right_node_index+self.dof_per_node, left_node_index:left_node_index+self.dof_per_node] += bar_matrix[self.dof_per_node:, :self.dof_per_node]
+            global_matrix[right_node_index:right_node_index+self.dof_per_node, right_node_index:right_node_index+self.dof_per_node] += bar_matrix[self.dof_per_node:, self.dof_per_node:]
             
         return global_matrix
 
@@ -63,20 +65,20 @@ class Structure:
         """
         force_vector = np.zeros(self.dof_per_node * len(self.nodes))
 
-        for i, bar in enumerate(self.bars):
+        for bar in self.bars:
             bar_global_force_vector = bar.getForceVector()
             
-            left_node_index = i * self.dof_per_node
-            right_node_index = (i + 1) * self.dof_per_node
+            left_node_index = bar.left_node.index * self.dof_per_node
+            right_node_index = bar.right_node.index * self.dof_per_node
             
             force_vector[left_node_index:left_node_index+self.dof_per_node] += bar_global_force_vector[:self.dof_per_node]
             force_vector[right_node_index:right_node_index+self.dof_per_node] += bar_global_force_vector[self.dof_per_node:]
             
         global_concentrated_forces = np.zeros(self.dof_per_node * len(self.nodes))
 
-        for index, node in enumerate(self.nodes):
+        for node in self.nodes:
             node_global_concentrated_forces = node.getGlobalForces()
-            i = index * 3
+            i = node.index * 3
             global_concentrated_forces[i:i+3] = node_global_concentrated_forces
 
         total_force_vector = force_vector + global_concentrated_forces
@@ -93,57 +95,57 @@ class Structure:
         reaction_vector = sp.zeros(self.dof_per_node*self.num_nodes, 1)
         displacement_vector = sp.zeros(self.dof_per_node*self.num_nodes, 1)
         
-        for i, node in enumerate(self.nodes):
-            index = i * self.dof_per_node
+        for node in self.nodes:
+            index = node.index * self.dof_per_node
             N_symbol, V_symbol, M_symbol = 'N_' + str(index+1), 'V_' + str(index+2), 'M_' + str(index+3)
             u_symbol, v_symbol, theta_symbol = 'u_' + str(index+1), 'v_' + str(index+2), 'theta_' + str(index+3)
             
             self.symbols.extend([N_symbol, V_symbol, M_symbol, u_symbol, v_symbol, theta_symbol])
             
             support_type = node.getSupportType()
-            prescripted_displacements = node.getPrescriptedDisplacements()
+            prescribed_displacements = node.getPrescribedDisplacements()
             
             if support_type == 'horizontal_roller':
-                reaction_vector[self.dof_per_node * i + 1] = V_symbol  
+                reaction_vector[index + 1] = V_symbol  
                 self.symbols.extend([V_symbol])
 
             elif support_type == 'vertical_roller':
-                reaction_vector[self.dof_per_node * i] = N_symbol  
+                reaction_vector[index] = N_symbol  
                 self.symbols.extend([N_symbol])
 
             elif support_type == 'double_roller':
-                reaction_vector[self.dof_per_node * i] = N_symbol  
-                reaction_vector[self.dof_per_node * i + 1] = V_symbol  
+                reaction_vector[index] = N_symbol  
+                reaction_vector[index + 1] = V_symbol  
                 self.symbols.extend([N_symbol, V_symbol])
 
             elif support_type == 'pinned':
-                reaction_vector[self.dof_per_node * i] = N_symbol  
-                reaction_vector[self.dof_per_node * i + 1] = V_symbol  
+                reaction_vector[index] = N_symbol  
+                reaction_vector[index + 1] = V_symbol  
                 self.symbols.extend([N_symbol, V_symbol])
 
             elif support_type == 'fixed':
-                reaction_vector[self.dof_per_node * i] = N_symbol  
-                reaction_vector[self.dof_per_node * i + 1] = V_symbol  
-                reaction_vector[self.dof_per_node * i + 2] = M_symbol 
+                reaction_vector[index] = N_symbol  
+                reaction_vector[index + 1] = V_symbol  
+                reaction_vector[index + 2] = M_symbol 
                 self.symbols.extend([N_symbol, V_symbol, M_symbol])
 
             
-            if prescripted_displacements[0] is not None:
-                displacement_vector[self.dof_per_node * i] = prescripted_displacements[0]
+            if prescribed_displacements[0] is not None:
+                displacement_vector[index] = prescribed_displacements[0]
             else:
-                displacement_vector[self.dof_per_node * i] = u_symbol  
+                displacement_vector[index] = u_symbol  
                 self.symbols.append(u_symbol)
    
-            if prescripted_displacements[1] is not None:
-                displacement_vector[self.dof_per_node * i + 1] = prescripted_displacements[1]        
+            if prescribed_displacements[1] is not None:
+                displacement_vector[index + 1] = prescribed_displacements[1]        
             else:
-                displacement_vector[self.dof_per_node * i + 1] = v_symbol
+                displacement_vector[index + 1] = v_symbol
                 self.symbols.append(v_symbol)
                 
-            if prescripted_displacements[2] is not None:
-                displacement_vector[self.dof_per_node * i + 2] = prescripted_displacements[2]
+            if prescribed_displacements[2] is not None:
+                displacement_vector[index + 2] = prescribed_displacements[2]
             else:
-                displacement_vector[self.dof_per_node * i + 2] = theta_symbol
+                displacement_vector[index + 2] = theta_symbol
                 self.symbols.append(theta_symbol)
 
                          
@@ -195,11 +197,11 @@ class Structure:
         """
         solution = self.getSolution()
         values = list(solution.values())  
-        for i in range(1, self.num_nodes + 1):
-            index = (i - 1) * 4
-            H, V, u, v = values[index:index+4]
-            self.nodes[i - 1].setDisplacement(u, v)
-            self.nodes[i - 1].setTotalForces(H, V)
+        for node in self.nodes:
+            index = node.index * 3
+            u, v, theta = values[index:index+3]
+            self.nodes[node.index].setDisplacement(u, v, theta)
+            self.nodes[node.index].setFinalForces(solution[f'N_{index+1}'], solution[f'V_{index+2}'], solution[f'M_{index+3}'])
             
     def updateNodesPositions(self):
         """

@@ -8,11 +8,11 @@ from bar import Bar
 from node import Node
 from structure import Structure
 
-node_1 = Node(x=0, y=0, support_type='fixed', prescribed_displacement_x=0, prescribed_displacement_y=0, prescribed_rotation=0)
+node_1 = Node(index=1, x=0, y=0, support_type='fixed', prescribed_displacement_x=0, prescribed_displacement_y=0, prescribed_rotation=0)
 
-node_2 = Node(x=3, y=2.25, support_type='free', global_f_x=50e3, global_f_y=25e3)
+node_2 = Node(index=2, x=3, y=2.25, support_type='free', global_f_x=50e3, global_f_y=25e3)
 
-node_3 = Node(x=4, y=3, support_type='double_roller', prescribed_displacement_x=2e-3, prescribed_displacement_y=0)
+node_3 = Node(index=3, x=4, y=3, support_type='double_roller', prescribed_displacement_x=2e-3, prescribed_displacement_y=0)
 
 nodes = [node_1, node_2, node_3]
 

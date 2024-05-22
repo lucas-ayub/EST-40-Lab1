@@ -1,6 +1,6 @@
 import numpy as np
-from node import *
 from scipy.integrate import quad
+from node import Node
 
 class Bar:
     def __init__(self, left_node, right_node, E, A, I, global_q_x=0, local_q_x=0, global_q_y=0, local_q_y=0):
