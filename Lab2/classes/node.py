@@ -61,7 +61,22 @@ class Node:
         :param delta_theta: The rotational displacement of the node.
         :type delta_theta: float
         """
-        self.displacement = np.array([delta_x, delta_y, delta_theta])
+        if self.prescribed_displacements[0] is not None:
+            d_x = self.prescribed_displacements[0]
+        else:
+            d_x = delta_x
+        
+        if self.prescribed_displacements[1] is not None:
+            d_y = self.prescribed_displacements[1]
+        else:
+            d_y = delta_y
+        
+        if self.prescribed_displacements[2] is not None:
+            d_theta = self.prescribed_displacements[2]
+        else:
+            d_theta = delta_theta
+        
+        self.displacement = np.array([d_x, d_y, d_theta], dtype=np.float64)
 
     def getDisplacement(self):
         """

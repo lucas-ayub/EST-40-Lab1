@@ -23,6 +23,7 @@ class Structure:
         self.r, self.u = self.calculateReactionAndDisplacementVectors()
         self.f_star = sp.Matrix(self.f) + self.r
         self.solution = self.calculateSolution()
+        self.setNodesDisplacementsAndForces()
 
     def calculateStiffnessMatrix(self):
         """
@@ -97,8 +98,8 @@ class Structure:
         
         for node in self.nodes:
             index = node.index * self.dof_per_node
-            N_symbol, V_symbol, M_symbol = 'N_' + str(index+1), 'V_' + str(index+2), 'M_' + str(index+3)
-            u_symbol, v_symbol, theta_symbol = 'u_' + str(index+1), 'v_' + str(index+2), 'theta_' + str(index+3)
+            N_symbol, V_symbol, M_symbol = f'N_{index+1}', f'V_{index+2}', f'M_{index+3}'
+            u_symbol, v_symbol, theta_symbol = f'u_{index+1}', f'v_{index+2}', f'theta_{index+3}'
             
             self.symbols.extend([N_symbol, V_symbol, M_symbol, u_symbol, v_symbol, theta_symbol])
             
@@ -175,11 +176,14 @@ class Structure:
         :rtype: dict
         """    
         variables = self.sympySolution()
-        solution = {key: 0 for key in self.symbols}        
+        solution = {key: 0 for key in self.symbols}
+        
         for key in solution.keys():
             if key in variables.keys():
                 solution[key] = variables[key]
-                
+
+        solution = {str(k): v for k, v in solution.items()}
+        
         return solution
     
     def getSolution(self):
@@ -196,13 +200,26 @@ class Structure:
         Sets the displacements and forces of the nodes based on the system solution.
         """
         solution = self.getSolution()
-        values = list(solution.values())  
+        
+        # Converte as chaves de sp.Symbol para strings
+        solution = {str(k): v for k, v in solution.items()}
+        
         for node in self.nodes:
-            index = node.index * 3
-            u, v, theta = values[index:index+3]
-            self.nodes[node.index].setDisplacement(u, v, theta)
-            self.nodes[node.index].setFinalForces(solution[f'N_{index+1}'], solution[f'V_{index+2}'], solution[f'M_{index+3}'])
-            
+            index = node.index * self.dof_per_node
+
+            N = solution.get(f'N_{index+1}', 0)
+            V = solution.get(f'V_{index+2}', 0)
+            M = solution.get(f'M_{index+3}', 0)
+
+            node.setFinalForces(N, V, M)
+
+            u = solution.get(f'u_{index+1}', 0)
+            v = solution.get(f'v_{index+2}', 0)
+            theta = solution.get(f'theta_{index+3}', 0)
+
+            node.setDisplacement(u, v, theta)
+
+                           
     def updateNodesPositions(self):
         """
         Updates all nodes positions based after their displacements.
@@ -229,3 +246,17 @@ class Structure:
             values.append(bar.getBarStress())
         infos = dict(zip(keys, values))
         return infos
+
+    def printNodalParameters(self):
+        """
+        Prints the nodal parameters.
+        """
+        for node in self.nodes:
+            positions = node.getDisplacement()
+            forces = node.getGlobalForces()
+            i = 3*node.index + 1  
+            print(f'node {node.index+1}:')
+            print(f'u_{i} = {positions[0]}, v_{i+1} = {positions[1]}, theta_{i+2} = {positions[2]}')
+            # print(f'N_{i} = {forces[0]}, V_{i+1} = {forces[1]}, M_{i+2} = {forces[2]})
+            print('\n')
+            

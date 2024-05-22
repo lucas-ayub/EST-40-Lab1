@@ -23,4 +23,6 @@ bars = [bar_1, bar_2]
 
 structure = Structure(list_of_nodes=nodes, list_of_bars=bars)
 
-print(structure.solution)
+solution = structure.solution
+
+structure.printNodalParameters()
