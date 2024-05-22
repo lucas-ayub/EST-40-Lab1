@@ -26,8 +26,8 @@ I = 500
 
 q1_y = -0.4
 
-bar_1 = Bar(left_node=node_2, right_node=node_1, E=E, A=A, I=I, local_q_y=q1_y)
-bar_2 = Bar(left_node=node_1, right_node=node_3, E=E, A=A, I=I)
+bar_1 = Bar(index=1, left_node=node_2, right_node=node_1, E=E, A=A, I=I, local_q_y=q1_y)
+bar_2 = Bar(index=2, left_node=node_1, right_node=node_3, E=E, A=A, I=I)
 
 bars = [bar_1, bar_2]
 
@@ -36,3 +36,4 @@ structure = Structure(list_of_nodes=nodes, list_of_bars=bars)
 solution = structure.solution
 
 structure.printNodalParameters()
+structure.printBarParameters()

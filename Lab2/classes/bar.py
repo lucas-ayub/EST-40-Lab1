@@ -1,12 +1,15 @@
 import numpy as np
+import sympy as sp
 from scipy.integrate import quad
 from node import Node
 
 class Bar:
-    def __init__(self, left_node, right_node, E, A, I, global_q_x=0, local_q_x=0, global_q_y=0, local_q_y=0):
+    def __init__(self,index, left_node, right_node, E, A, I, global_q_x=0, local_q_x=0, global_q_y=0, local_q_y=0):
         """
         Initializes a Bar object.
 
+        :param index: The index of the bar.
+        :type index: int
         :param left_node: The left node of the bar.
         :type left_node: _Node_
         :param right_node: The right node of the bar.
@@ -26,6 +29,7 @@ class Bar:
         :param local_q_y: Distributed load in the y-direction (Local).
         :type local_q_y: function
         """
+        self.index = index 
         self.left_node = left_node
         self.right_node = right_node
         self.E = E
@@ -47,6 +51,8 @@ class Bar:
         self.force_vector = self.calculateForceVector()
         self.N = 0
         self.sigma = 0
+        self.V = 0
+        self.M = 0
         
     def getBarLength(self):
         """
@@ -191,12 +197,23 @@ class Bar:
         """
         return self.stiffness_matrix
 
-    def setBarNormalAndStress(self):
+    def calculateBarNormalAndStress(self):
         """
         Calculates the stress and normal force of the bar.
         """
-        self.L = self.calculateBarLength() 
-        sigma = self.E * (self.L - self.Li) / self.Li 
+        
+        left_displacements = self.left_node.getDisplacement()
+        right_displacements = self.right_node.getDisplacement()
+    
+        R_T = self.rotation_matrix_3x3.T
+        
+        local_left_displacements = R_T @ left_displacements
+        local_right_displacements = R_T @ right_displacements
+        
+        u_l1 = local_left_displacements[0]
+        u_l2 = local_left_displacements[1]
+        
+        sigma = self.E * (u_l1 - u_l2) / self.Li 
         self.sigma = sigma 
         self.N = sigma * self.A  
 
@@ -217,3 +234,63 @@ class Bar:
         :rtype: float
         """
         return self.sigma
+
+    def calculateBarShearForceAndBendingMoment(self):
+        """
+        Calculates the shear force and bending moment of the bar.
+        """
+        
+        left_displacements = self.left_node.getDisplacement()
+        right_displacements = self.right_node.getDisplacement()
+    
+        R_T = self.rotation_matrix_3x3.T
+        
+        local_left_displacements = R_T @ left_displacements
+        local_right_displacements = R_T @ right_displacements
+        
+        
+        v_l1 = local_left_displacements[0]  
+        theta_l2 = local_left_displacements[2]
+        v_l3 = local_right_displacements[0]
+        theta_l4 = local_right_displacements[2]
+
+        E = self.E
+        I = self.I
+        L = self.Li
+        
+        self.V = E * I * (v_l1 * (12 / L**3) + theta_l2 * (6 / L**2) + v_l3 * (-12 / L**3) + theta_l4 * (6 / L**2) )
+        
+        self.M = lambda x: E * I * (v_l1 * (12 * x / L**3 - 6 / L**2) + theta_l2 * (6 * x / L**2 - 4 / L) + v_l3 * (-12 * x / L**3 + 6 / L**2) + theta_l4 * (6 * x / L**2 - 2 / L))
+    
+    def getBarShear(self):
+        """
+        Gets the bar shear force.
+        
+        :return: The shear force of the bar.
+        :rtype: float
+        """
+        return self.V
+    
+    def getBarBendingMomentum(self):
+        """
+        Gets the bar bending moment.
+        
+        :return: The bending moment of the bar.
+        :rtype: function
+        """
+        return self.M
+        
+    def getBendingMomentumExpression(self):
+        """
+        Gets the bending moment expression of the bar.
+        
+        :return: The symbolic bending moment expression of the bar.
+        :rtype: function
+        """
+        x = sp.symbols('x')
+
+        M_symbolic = self.M(x)
+        
+        return M_symbolic
+    
+    

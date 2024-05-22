@@ -23,7 +23,9 @@ class Structure:
         self.r, self.u = self.calculateReactionAndDisplacementVectors()
         self.f_star = sp.Matrix(self.f) + self.r
         self.solution = self.calculateSolution()
-        self.setNodesDisplacementsAndForces()
+        self.calculateNodesDisplacementsAndForces()
+        self.calculateBarsStressesAndNormals()
+        self.calculateBarsShearForcesAndBendingMoments()
 
     def calculateStiffnessMatrix(self):
         """
@@ -195,7 +197,7 @@ class Structure:
         """
         return self.solution
     
-    def setNodesDisplacementsAndForces(self):
+    def calculateNodesDisplacementsAndForces(self):
         """
         Sets the displacements and forces of the nodes based on the system solution.
         """
@@ -227,25 +229,30 @@ class Structure:
         for node in self.nodes:
             node.updatePosition()
     
-    def setBarsStressesAndNormals(self):
+    def calculateBarsStressesAndNormals(self):
         """
         Sets the normals and stresses of the bars based on the system solution.
         """
         for bar in self.bars:
-            bar.setBarNormalAndStress()
+            bar.calculateBarNormalAndStress()
             
-    def getBarsStressesAndNormals(self):
+    def calculateBarsShearForcesAndBendingMoments(self):
         """
-        Gets the stresses and normals of the bars.
+        Sets the shear forces and bending moments of the bars based on the system solution.
         """
-        keys, values = [], []
-        for i, bar in enumerate(self.bars):
-            keys.append(f'N_{i+1}')
-            keys.append(f'sigma_{i+1}')
-            values.append(bar.getBarNormal())
-            values.append(bar.getBarStress())
-        infos = dict(zip(keys, values))
-        return infos
+        for bar in self.bars:
+            bar.calculateBarShearForceAndBendingMoment()
+            
+    def printBarParameters(self):
+        """
+        Prints the bar parameters.
+        """
+        for bar in self.bars:
+            bar.calculateBarShearForceAndBendingMoment() 
+            print(f'Bar {bar.index}:')
+            print(f'N = {bar.N}, V = {bar.V}, M = {bar.getBendingMomentumExpression()}')
+            print('\n')
+    
 
     def printNodalParameters(self):
         """

@@ -16,8 +16,8 @@ node_3 = Node(index=3, x=4, y=3, support_type='double_roller', prescribed_displa
 
 nodes = [node_1, node_2, node_3]
 
-bar_1 = Bar(left_node=node_1, right_node=node_2, E=25e9, A=0.036, I=2.7e-4, local_q_x=40e3)
-bar_2 = Bar(left_node=node_2, right_node=node_3, E=25e9, A=0.036, I=2.7e-4, local_q_y=20e3)
+bar_1 = Bar(index=1, left_node=node_1, right_node=node_2, E=25e9, A=0.036, I=2.7e-4, local_q_x=40e3)
+bar_2 = Bar(index=2, left_node=node_2, right_node=node_3, E=25e9, A=0.036, I=2.7e-4, local_q_y=20e3)
 
 bars = [bar_1, bar_2]
 
@@ -26,3 +26,4 @@ structure = Structure(list_of_nodes=nodes, list_of_bars=bars)
 solution = structure.solution
 
 structure.printNodalParameters()
+structure.printBarParameters()
