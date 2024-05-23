@@ -1,5 +1,6 @@
 import numpy as np
 import sympy as sp
+import matplotlib.pyplot as plt
 from node import Node
 from bar import Bar
 
@@ -23,9 +24,10 @@ class Structure:
         self.r, self.u = self.calculateReactionAndDisplacementVectors()
         self.f_star = sp.Matrix(self.f) + self.r
         self.solution = self.calculateSolution()
-        self.calculateNodesDisplacementsAndForces()
-        self.calculateBarsStressesAndNormals()
-        self.calculateBarsShearForcesAndBendingMoments()
+        self.calculateNodalParams()
+        self.calculateBarParams()
+        self.updateNodesPositions()
+        
 
     def calculateStiffnessMatrix(self):
         """
@@ -197,13 +199,12 @@ class Structure:
         """
         return self.solution
     
-    def calculateNodesDisplacementsAndForces(self):
+    def calculateNodalParams(self):
         """
         Sets the displacements and forces of the nodes based on the system solution.
         """
         solution = self.getSolution()
         
-        # Converte as chaves de sp.Symbol para strings
         solution = {str(k): v for k, v in solution.items()}
         
         for node in self.nodes:
@@ -229,18 +230,12 @@ class Structure:
         for node in self.nodes:
             node.updatePosition()
     
-    def calculateBarsStressesAndNormals(self):
+    def calculateBarParams(self):
         """
-        Sets the normals and stresses of the bars based on the system solution.
+        Sets the normals, stresses, shear forces and bending moments of the bars based on the system solution.
         """
         for bar in self.bars:
             bar.calculateBarNormalAndStress()
-            
-    def calculateBarsShearForcesAndBendingMoments(self):
-        """
-        Sets the shear forces and bending moments of the bars based on the system solution.
-        """
-        for bar in self.bars:
             bar.calculateBarShearForceAndBendingMoment()
             
     def printBarParameters(self):
@@ -264,6 +259,6 @@ class Structure:
             i = 3*node.index + 1  
             print(f'node {node.index+1}:')
             print(f'u_{i} = {positions[0]}, v_{i+1} = {positions[1]}, theta_{i+2} = {positions[2]}')
-            # print(f'N_{i} = {forces[0]}, V_{i+1} = {forces[1]}, M_{i+2} = {forces[2]})
+            # print(f'N_{i} = {forces[0]}, V_{i+1} = {forces[1]}, M_{i+2} = {forces[2]}')
             print('\n')
             

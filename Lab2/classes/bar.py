@@ -211,7 +211,7 @@ class Bar:
         local_right_displacements = R_T @ right_displacements
         
         u_l1 = local_left_displacements[0]
-        u_l2 = local_left_displacements[1]
+        u_l2 = local_right_displacements[0]
         
         sigma = self.E * (u_l1 - u_l2) / self.Li 
         self.sigma = sigma 
@@ -248,10 +248,9 @@ class Bar:
         local_left_displacements = R_T @ left_displacements
         local_right_displacements = R_T @ right_displacements
         
-        
-        v_l1 = local_left_displacements[0]  
+        v_l1 = local_left_displacements[1]  
         theta_l2 = local_left_displacements[2]
-        v_l3 = local_right_displacements[0]
+        v_l3 = local_right_displacements[1]
         theta_l4 = local_right_displacements[2]
 
         E = self.E

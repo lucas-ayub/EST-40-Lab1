@@ -28,6 +28,7 @@ class Node:
         :type external_momentum: float
         """
         self.index = index - 1
+        self.initial_position = np.array([x, y], dtype=np.float64)
         self.position = np.array([x, y], dtype=np.float64)
         self.displacement = np.array([0, 0, 0], dtype=np.float64)
         self.support = support_type
