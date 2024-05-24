@@ -259,6 +259,5 @@ class Structure:
             i = 3*node.index + 1  
             print(f'node {node.index+1}:')
             print(f'u_{i} = {positions[0]}, v_{i+1} = {positions[1]}, theta_{i+2} = {positions[2]}')
-            # print(f'N_{i} = {forces[0]}, V_{i+1} = {forces[1]}, M_{i+2} = {forces[2]}')
             print('\n')
             

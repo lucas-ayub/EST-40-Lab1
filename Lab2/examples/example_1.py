@@ -15,9 +15,6 @@ E = 200e9
 A = 4812e-6
 I = 1.24204e-4
 
-b1 = np.linspace(0, L1, 5)
-b2 = np.linspace(L1, L1 + L2, 5)[1:]
-
 def getLinearLoad(start_value, final_value, L):
     """
     Initializes a function to get a linear load function.
@@ -33,41 +30,53 @@ def getLinearLoad(start_value, final_value, L):
     """
     return lambda x: start_value + (final_value - start_value) * (x / L)
 
-load = getLinearLoad(-90e3, -30e3, L1 + L2)
+load = getLinearLoad(90e3, 30e3, L1 + L2)
 
-node_e_1 = Node(index=1, x=b1[0], y=0, support_type='fixed', prescribed_displacement_x=0, prescribed_displacement_y=0, prescribed_rotation=0)
-node_2 = Node(index=2, x=b1[1], y=0, support_type='free')
-node_3 = Node(index=3, x=b1[2], y=0, support_type='free')
-node_4 = Node(index=4, x=b1[3], y=0, support_type='free')
-node_e_5 = Node(index=5, x=b1[4], y=0, support_type='horizontal_roller', prescribed_displacement_y=0)
+node_1 = Node(index=1, x=0, y=0, support_type='fixed', prescribed_displacement_x=0, prescribed_displacement_y=0, prescribed_rotation=0)
 
-node_6 = Node(index=6, x=b2[0], y=0, support_type='free')
-node_7 = Node(index=7, x=b2[1], y=0, support_type='free')
-node_8 = Node(index=8, x=b2[2], y=0, support_type='free')
-node_e_9 = Node(index=9, x=b2[3], y=0, support_type='free')
+node_2 = Node(index=2, x=L1/3, y=0, support_type='free')
+node_3 = Node(index=3, x=2*L1/3, y=0, support_type='free')
 
-nodes = [node_e_1, node_2, node_3, node_4, node_e_5, node_6, node_7, node_8, node_e_9]
+node_4 = Node(index=4, x=L1, y=0, support_type='horizontal_roller', prescribed_displacement_y=0)
 
+node_5 = Node(index=5, x=L1 + 0.5*L2, y=0, support_type='free')
+node_6 = Node(index=6, x=L1 + L2, y=0, support_type='free')
 
-bars = []
-# Loop para a primeira parte da estrutura (b1)
-for i in range(4):
-    q0 = load(b1[i])
-    qf = load(b1[i + 1])
-    bars.append(Bar(index=i + 1, left_node=nodes[i], right_node=nodes[i + 1], E=E, A=A, I=I, local_q_y=getLinearLoad(q0, qf, b1[i + 1] - b1[i])))
+nodes = [node_1, node_2, node_3, node_4, node_5, node_6]
 
-# Loop para a segunda parte da estrutura (b2)
-for i in range(3):  # Ajustado para evitar o acesso fora dos limites
-    q0 = load(b2[i])
-    qf = load(b2[i + 1])
-    bars.append(Bar(index=i + 5, left_node=nodes[i + 4], right_node=nodes[i + 5], E=E, A=A, I=I, local_q_y=getLinearLoad(q0, qf, b2[i + 1] - b2[i])))
+q0 = load(0)
+qf = load(L1/3)
+load_1 = getLinearLoad(q0, qf, L1/3)
 
-# Adicionando a última barra manualmente para garantir que todas as barras sejam incluídas
-q0 = load(b2[3])
-qf = load(b2[3])  # O último ponto não tem um ponto final seguinte, então a carga final será igual à carga inicial
-bars.append(Bar(index=8, left_node=nodes[7], right_node=nodes[8], E=E, A=A, I=I, local_q_y=getLinearLoad(q0, qf, b2[3] - b2[2])))
+bar_1 = Bar(index = 1, left_node = node_1, right_node = node_2, E = E, A = A, I = I, local_q_y = lambda x: -load_1(x))
 
-structure = Structure(list_of_nodes=nodes, list_of_bars=bars)
+q0 = load(L1/3)
+qf = load(2*L1/3)
+load_2 = getLinearLoad(q0, qf, L1/3)
+
+bar_2 = Bar(index = 2, left_node = node_2, right_node = node_3, E = E, A = A, I = I, local_q_y = lambda x: -load_2(x))
+
+q0 = load(2*L1/3)
+qf = load(L1)
+load_3 = getLinearLoad(q0, qf, L1/3)
+
+bar_3 = Bar(index = 3, left_node = node_3, right_node = node_4, E = E, A = A, I = I, local_q_y = lambda x: -load_3(x))
+
+q0 = load(L1)
+qf = load(L1 + 0.5*L2)
+load_4 = getLinearLoad(q0, qf, 0.5*L2)
+
+bar_4 = Bar(index = 4, left_node = node_4, right_node = node_5, E = E, A = A, I = I, local_q_y = lambda x: -load_4(x))
+
+q0 = load(L1 + 0.5*L2)
+qf = load(L1 + L2)
+load_5 = getLinearLoad(q0, qf, 0.5*L2)
+
+bar_5 = Bar(index = 5, left_node = node_5, right_node = node_6, E = E, A = A, I = I, local_q_y = lambda x: -load_5(x))
+
+bars = [bar_1, bar_2, bar_3, bar_4, bar_5] 
+
+structure = Structure(list_of_nodes = nodes, list_of_bars = bars)
 
 solution = structure.solution
 

@@ -1,2 +1,0 @@
-structure.printNodalParameters()
-structure.printBarParameters()
