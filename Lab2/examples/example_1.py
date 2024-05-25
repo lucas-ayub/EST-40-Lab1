@@ -80,5 +80,7 @@ structure = Structure(list_of_nodes = nodes, list_of_bars = bars)
 
 solution = structure.solution
 
+print('========================================================================')
+print('Exemplo 1:\n')
 structure.printNodalParameters()
 structure.printBarParameters()
